@@ -360,7 +360,7 @@ export function initSite() {
   /* ---------- 4g. Nolan live chat ----------
      After the demo, visitors can ask their own questions (or tap a suggestion,
      or attach a still). Each question goes to the server route at /api/nolan (src/routes/api/nolan.ts), which
-     asks Claude and streams the answer back; it's written into a new bubble
+     asks Claude (or, with no API key, uses his built-in answers) and streams the answer back; it's written into a new bubble
      as it arrives. Needs the Node server running (npm start). */
   const form = document.getElementById('nolan-form');
   const thread = document.getElementById('nolan-thread');

@@ -8,6 +8,7 @@ import '@tanstack/react-start/server-only'
 import Anthropic from '@anthropic-ai/sdk'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { offlineAnswer, streamText } from './nolan-offline.server'
 
 const MODEL = 'claude-opus-5-5'
 
@@ -122,6 +123,15 @@ export async function handleNolan(request: Request): Promise<Response> {
   try { body = await request.json() } catch { /* handled below */ }
   const messages = toClaudeMessages(body?.messages)
   if (!messages) return new Response('Bad request.', { status: 400 })
+
+  // No API key: answer from Nolan's built-in script instead (nolan-offline.server.ts)
+  if (!process.env.ANTHROPIC_API_KEY) {
+    const last = messages.at(-1)!
+    const blocks = Array.isArray(last.content) ? last.content : []
+    const question = blocks.map((b) => (b.type === 'text' ? b.text : '')).join(' ')
+    const answer = offlineAnswer(question, blocks.some((b) => b.type === 'image'), Math.floor(messages.length / 2)) // 0 for the first question
+    return new Response(streamText(answer, request.signal), { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' } })
+  }
 
   const client = new Anthropic() // reads ANTHROPIC_API_KEY from .env
   const stream = client.beta.messages.stream({
