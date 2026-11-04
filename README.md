@@ -14,11 +14,16 @@ npm run dev          # http://localhost:3000
 | Command | What it does |
 | --- | --- |
 | `npm run dev` | Development server with hot reload at http://localhost:3000 |
-| `npm run build` | Production build into `dist/` |
-| `npm start` | Builds, then serves the production version at http://localhost:3000 |
+| `npm run build` | Production build (Nitro writes a Node server to `.output/`; on Vercel it builds for Vercel automatically) |
+| `npm start` | Runs the production build at http://localhost:3000 (run `npm run build` first) |
 | `npm run typecheck` | TypeScript check |
 
 The site works without an API key; only Nolan's live answers need one.
+
+## Deploy (Vercel)
+
+Import the GitHub repo in Vercel; no settings are needed (Nitro detects Vercel during the build).
+For Nolan's live answers, add `ANTHROPIC_API_KEY` under **Project → Settings → Environment Variables**, then redeploy.
 
 ## How it's organised
 

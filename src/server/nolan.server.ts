@@ -27,9 +27,20 @@ Stay on film, photography, video-making and visual storytelling. If asked about 
 /* ---------- The example conversation already on the page ----------
    Every chat starts as a follow-up to it, so Nolan can see the Get Out still. */
 let demoMessages: Anthropic.Beta.BetaMessageParam[] | null = null
-async function demo(): Promise<Anthropic.Beta.BetaMessageParam[]> {
+
+// The still is fetched from the site itself, because on hosts like Vercel the server
+// functions can't read the public/ folder from disk. Locally, reading the file also works.
+async function loadStill(origin: string): Promise<string> {
+  try {
+    const res = await fetch(new URL('/images/get-out.jpg', origin))
+    if (res.ok) return Buffer.from(await res.arrayBuffer()).toString('base64')
+  } catch { /* fall back to the file on disk */ }
+  return (await readFile(path.join(process.cwd(), 'public', 'images', 'get-out.jpg'))).toString('base64')
+}
+
+async function demo(origin: string): Promise<Anthropic.Beta.BetaMessageParam[]> {
   if (!demoMessages) {
-    const still = (await readFile(path.join(process.cwd(), 'public', 'images', 'get-out.jpg'))).toString('base64')
+    const still = await loadStill(origin)
     demoMessages = [
       {
         role: 'user',
@@ -121,7 +132,7 @@ export async function handleNolan(request: Request): Promise<Response> {
     betas: ['server-side-fallback-2026-07-01'],
     fallbacks: 'default',
     system: NOLAN,
-    messages: [...(await demo()), ...messages],
+    messages: [...(await demo(new URL(request.url).origin)), ...messages],
   })
 
   // Stop paying for tokens if the visitor closes the page mid-answer

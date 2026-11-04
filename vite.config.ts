@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
+import { nitro } from 'nitro/vite'
 
 export default defineConfig(({ mode }) => {
   // Make .env values (like ANTHROPIC_API_KEY) available to server code during `npm run dev`.
@@ -14,6 +15,9 @@ export default defineConfig(({ mode }) => {
     server: { port: 3000 },
     plugins: [
       tanstackStart(), // must come before react()
+      // Nitro packages the build for hosting. It detects Vercel automatically
+      // and, run locally, builds a Node server into .output/
+      nitro(),
       viteReact(),
     ],
   }

@@ -12,3 +12,4 @@ dist/
 # system and editor files
 .DS_Store
 *.blend1
+.vercel/
