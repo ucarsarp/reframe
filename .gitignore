@@ -1,0 +1,14 @@
+# dependencies and build output
+node_modules/
+dist/
+.output/
+.tanstack/
+.vinxi/
+
+# secrets: keep your API key out of git (.env.example is the template)
+.env
+.env.local
+
+# system and editor files
+.DS_Store
+*.blend1

@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ReFrame — Learn to read the language of film</title>
+  <meta name="description" content="ReFrame breaks any film frame down into shot type, camera angle, lighting and the director's intent, then teaches you to recreate it with everyday gear." />
+
+  <!-- Flags that JS is available so scroll animations can hide content before it reveals.
+       Without JS, everything simply shows. -->
+  <script>document.documentElement.classList.add('js');</script>
+
+  <!-- Fonts: Instrument Serif (display, with italics) + Inter (body) + IBM Plex Mono (labels).
+       Change here and in the CSS variables at the top of styles.css. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="in-intro">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- Inverting cursor (only enabled on mouse devices without reduced motion) -->
+  <div class="cursor" aria-hidden="true"></div>
+
+  <!-- Film grain + vignette over the whole page (decorative) -->
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- Scroll HUD: a camera-style timecode that runs as you scroll, the current scene,
+       and a thin progress line along the bottom edge -->
+  <div class="hud" aria-hidden="true">
+    <span class="hud__rec"><i></i>REC</span>
+    <span class="hud__tc" id="hud-tc">00:00:00:00</span>
+    <span class="hud__scene" id="hud-scene">Scene 00 / Opening</span>
+  </div>
+  <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress"></span></div>
+
+  <!-- =========================================================
+       1. NAVIGATION
+       ========================================================= -->
+  <header class="nav" id="nav">
+    <!-- Launch countdown bar. The target date/time is set in script.js (LAUNCH_DATE). -->
+    <div class="launch-bar" id="launch-bar">
+      <div class="launch-bar__inner container">
+        <p class="launch-bar__label">ReFrame goes live in</p>
+        <div class="countdown" role="timer" aria-live="off" aria-label="Time until ReFrame launches on 18 November 2026 at 12:00">
+          <span class="countdown__unit"><span class="countdown__num" data-unit="days">--</span><span class="countdown__tag">d</span></span>
+          <span class="countdown__sep" aria-hidden="true">:</span>
+          <span class="countdown__unit"><span class="countdown__num" data-unit="hours">--</span><span class="countdown__tag">h</span></span>
+          <span class="countdown__sep" aria-hidden="true">:</span>
+          <span class="countdown__unit"><span class="countdown__num" data-unit="minutes">--</span><span class="countdown__tag">m</span></span>
+          <span class="countdown__sep" aria-hidden="true">:</span>
+          <span class="countdown__unit"><span class="countdown__num" data-unit="seconds">--</span><span class="countdown__tag">s</span></span>
+        </div>
+        <p class="launch-bar__date">18.11.26 · 12:30
+        </p>
+      </div>
+    </div>
+
+    <!-- Three columns: [menu toggle on mobile] [logo + links, centered] [Download on the right] -->
+    <div class="nav__inner container">
+      <button class="nav__toggle" aria-expanded="false" aria-controls="nav-menu">
+        <span class="sr-only">Open menu</span>
+        <span class="nav__toggle-bar"></span>
+        <span class="nav__toggle-bar"></span>
+      </button>
+
+      <div class="nav__center">
+        <a href="#top" class="nav__logo" aria-label="ReFrame, back to top">Re<span>Frame</span></a>
+        <nav class="nav__menu" id="nav-menu" aria-label="Primary">
+          <ul class="nav__links">
+            <li><a class="link" href="#features">Features</a></li>
+            <li><a class="link" href="#nolan">Nolan <span class="nav__ai">AI</span></a></li>
+            <li><a class="link" href="#how">How it works</a></li>
+            <li><a class="link" href="#mission">Mission</a></li>
+            <li><a class="link" href="#showcase">Showcase</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <a href="#download" class="btn btn--primary btn--sm nav__cta">Download</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- =========================================================
+         0. INTRO TITLE CARD
+         The page opens on the app name. Scrolling plays the intro
+         (title zooms + fades, letterbox bars retract), then the hero appears.
+         Scroll length = .intro height in styles.css.
+         ========================================================= -->
+    <section class="intro" id="intro" aria-label="ReFrame title card">
+      <div class="intro__sticky">
+        <div class="intro__glow" aria-hidden="true"></div>
+        <span class="intro__bar intro__bar--top" aria-hidden="true"></span>
+        <span class="intro__bar intro__bar--bottom" aria-hidden="true"></span>
+        <span class="intro__corner intro__corner--tl" aria-hidden="true"></span>
+        <span class="intro__corner intro__corner--tr" aria-hidden="true"></span>
+        <span class="intro__corner intro__corner--bl" aria-hidden="true"></span>
+        <span class="intro__corner intro__corner--br" aria-hidden="true"></span>
+
+        <div class="intro__content">
+          <div class="intro__meta intro__meta--top">
+            <p class="intro__line">A film education app · 2026</p>
+          </div>
+          <p class="intro__title">
+            <span class="sr-only">ReFrame</span>
+            <span class="intro__chars" aria-hidden="true"><span>R</span><span>e</span><em><span>F</span><span>r</span><span>a</span><span>m</span><span>e</span></em></span>
+          </p>
+          <div class="intro__meta">
+            <p class="intro__line intro__line--serif">Every frame has a <em>reason.</em></p>
+          </div>
+        </div>
+
+        <!-- Clicking "Scroll" plays the intro and takes you to the site -->
+        <button class="intro__meta intro__cue" id="intro-cue" type="button" aria-label="Skip the title card and go to the site">
+          <span class="intro__line">Scroll</span>
+          <i aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         2. HERO
+         ========================================================= -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <!-- 3D film camera + stage lights, drawn by three-scene.js behind the hero content -->
+      <canvas class="hero__canvas" id="hero-canvas" aria-hidden="true"></canvas>
+
+      <div class="container">
+        <p class="eyebrow hero__eyebrow" data-hero>Film education, reframed</p>
+
+        <!-- Each .line animates in on load. Edit the words inside the inner <span>s. -->
+        <h1 class="hero__title" id="hero-title">
+          <span class="line"><span>Learn to <em>read</em></span></span>
+          <span class="line"><span>the language</span></span>
+          <span class="line"><span>of <em>film.</em></span></span>
+        </h1>
+
+        <div class="hero__bottom">
+          <p class="hero__sub" data-hero>
+            Upload any frame and ReFrame breaks it down: shot, angle, light, and why the director chose it.
+          </p>
+          <div class="hero__actions" data-hero>
+            <a href="#download" class="btn btn--primary">Download</a>
+            <a href="#features" class="btn btn--ghost">Learn more <span class="btn__arrow" aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero media placeholder: swap the inner .frame for an <img> or <video> later -->
+      <div class="container">
+        <figure class="hero__media" data-hero>
+          <div class="frame frame--hero" role="img" aria-label="Placeholder for a ReFrame app screenshot showing a film still with its AI analysis">
+            <div class="frame__still" data-parallax="0.12">
+              <div class="frame__grid" aria-hidden="true"></div>
+            </div>
+            <!-- Mock analysis overlay -->
+            <div class="frame__panel" aria-hidden="true">
+              <span class="tag">Medium close-up</span>
+              <span class="tag">Low angle</span>
+              <span class="tag">Hard key · 45°</span>
+              <p class="frame__note">Intent: the low angle gives the character quiet authority before the reveal.</p>
+            </div>
+            <span class="frame__corner frame__corner--tl" aria-hidden="true"></span>
+            <span class="frame__corner frame__corner--tr" aria-hidden="true"></span>
+            <span class="frame__corner frame__corner--bl" aria-hidden="true"></span>
+            <span class="frame__corner frame__corner--br" aria-hidden="true"></span>
+            <span class="frame__label" aria-hidden="true">App screenshot / video · 2.39:1</span>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Scrolling ticker of film terms (decorative) -->
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker__track">
+        <span>Extreme wide</span><span>Dutch angle</span><span>Chiaroscuro</span><span>Rule of thirds</span><span>Over the shoulder</span><span>Rim light</span><span>Dolly zoom</span><span>Negative space</span>
+        <span>Extreme wide</span><span>Dutch angle</span><span>Chiaroscuro</span><span>Rule of thirds</span><span>Over the shoulder</span><span>Rim light</span><span>Dolly zoom</span><span>Negative space</span>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         3. FEATURES (alternating left / right)
+         ========================================================= -->
+    <section class="section features" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <header class="section__head" data-reveal>
+          <p class="eyebrow">Scene 01 — Features</p>
+          <h2 class="section__title" id="features-title" data-split>Every frame is a <em>lesson.</em></h2>
+        </header>
+
+        <!-- Four centered feature cards (row on desktop, 2×2 on tablet, column on phones) -->
+        <div class="features__grid">
+        <!-- Feature 1 -->
+        <article class="feature" data-reveal>
+          <div class="feature__text">
+            <div class="feature__icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 10V4h6M22 4h6v6M28 22v6h-6M10 28H4v-6"/><circle cx="16" cy="16" r="4"/></svg>
+            </div>
+            <h3 class="feature__title">Shot analysis</h3>
+            <p class="feature__desc">Get an instant breakdown of shot type, camera angle and lighting setup for any still you upload or any frame you pick from a film.</p>
+          </div>
+          <figure class="feature__media">
+            <div class="frame frame--a">
+              <!-- Film still: drop the file into images/ (see images/README.txt). Placeholder shows until it exists. -->
+              <div class="frame__still" data-parallax="0.05">
+                <img class="frame__img" src="../public/images/in-the-mood-for-love.jpg" alt="Still from In the Mood for Love (2000): a man seen in a mirror on the left, a woman in a patterned qipao sitting on a red bed on the right, both lit by warm lamplight" loading="lazy" />
+                <div class="frame__grid" aria-hidden="true"></div>
+              </div>
+            </div>
+            <figcaption class="feature__credit"><em>In the Mood for Love</em> (2000) · Wong Kar-wai</figcaption>
+          </figure>
+        </article>
+
+        <!-- Feature 2 (reversed) -->
+        <article class="feature feature--reverse" data-reveal>
+          <div class="feature__text">
+            <div class="feature__icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 16s5-9 14-9 14 9 14 9-5 9-14 9S2 16 2 16z"/><circle cx="16" cy="16" r="4"/></svg>
+            </div>
+            <h3 class="feature__title">Director's intent</h3>
+            <p class="feature__desc">Go past "it looks good." ReFrame explains why a shot was framed the way it was and what the director wanted you to feel.</p>
+          </div>
+          <figure class="feature__media">
+            <div class="frame frame--b">
+              <!-- Film still: drop the file into images/ (see images/README.txt). Placeholder shows until it exists. -->
+              <div class="frame__still" data-parallax="0.05">
+                <img class="frame__img" src="../public/images/get-out.jpg" alt="Still from Get Out (2017): a tight, dead-centre close-up of Chris frozen in an armchair, eyes wide and tears running down his face in a dim room" loading="lazy" />
+                <div class="frame__grid" aria-hidden="true"></div>
+              </div>
+            </div>
+            <figcaption class="feature__credit"><em>Get Out</em> (2017) · Jordan Peele</figcaption>
+          </figure>
+        </article>
+
+        <!-- Feature 3 -->
+        <article class="feature" data-reveal>
+          <div class="feature__text">
+            <div class="feature__icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h10a2 2 0 0 1 2 2v18a2 2 0 0 0-2-2H4zM28 6H18a2 2 0 0 0-2 2v18a2 2 0 0 1 2-2h10z"/></svg>
+            </div>
+            <h3 class="feature__title">Short lessons</h3>
+            <p class="feature__desc">Every result links to a bite-sized lesson on the technique behind it, so each analysis teaches you something you keep.</p>
+          </div>
+          <figure class="feature__media">
+            <div class="frame frame--c">
+              <!-- Film still: drop the file into images/ (see images/README.txt). Placeholder shows until it exists. -->
+              <div class="frame__still" data-parallax="0.05">
+                <img class="frame__img" src="../public/images/social-network.jpg" alt="Still from The Social Network (2010): a hand writing an equation on a window in sharp focus while the faces behind it fall into soft, shallow-focus blur" loading="lazy" />
+                <div class="frame__grid" aria-hidden="true"></div>
+              </div>
+            </div>
+            <figcaption class="feature__credit"><em>The Social Network</em> (2010) · David Fincher</figcaption>
+          </figure>
+        </article>
+
+        <!-- Feature 4 (reversed) -->
+        <article class="feature feature--reverse" data-reveal>
+          <div class="feature__text">
+            <div class="feature__icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="9" width="20" height="16" rx="2"/><path d="M23 14l6-4v14l-6-4"/><circle cx="13" cy="17" r="3.5"/></svg>
+            </div>
+            <h3 class="feature__title">Recreate the shot</h3>
+            <p class="feature__desc">Step-by-step guides show you how to rebuild the shot with a phone, a desk lamp and whatever you have at home. No pro gear required.</p>
+          </div>
+          <figure class="feature__media">
+            <div class="frame frame--d">
+              <!-- Film still: drop the file into images/ (see images/README.txt). Placeholder shows until it exists. -->
+              <div class="frame__still" data-parallax="0.05">
+                <img class="frame__img" src="../public/images/phantom-thread.jpg" alt="Still from Phantom Thread (2017): a couple embracing in an empty ballroom scattered with balloons, a single spotlight beam cutting through the haze" loading="lazy" />
+                <div class="frame__grid" aria-hidden="true"></div>
+              </div>
+            </div>
+            <figcaption class="feature__credit"><em>Phantom Thread</em> (2017) · Paul Thomas Anderson</figcaption>
+          </figure>
+        </article>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =========================================================
+         3b. NOLAN · the AI film tutor (named after Christopher Nolan)
+         The chat demo below plays when it scrolls into view (script.js, "Nolan chat demo").
+         ========================================================= -->
+    <section class="section nolan" id="nolan" aria-labelledby="nolan-title">
+      <div class="container nolan__inner">
+        <header class="section__head" data-reveal>
+          <p class="eyebrow">Scene 02 — Meet Nolan</p>
+          <h2 class="section__title" id="nolan-title" data-split>Ask <em>Nolan.</em></h2>
+          <p class="nolan__lede">ReFrame's AI film tutor, named after Christopher Nolan. Point your phone at any screen and Nolan tells you what you're watching, how it was filmed, and why it works.</p>
+        </header>
+
+        <div class="nolan__stage" data-reveal>
+          <div class="nolan__avatar" aria-hidden="true"><span>N</span></div>
+
+          <!-- Example conversation -->
+          <div class="nolan-chat" id="nolan-chat" aria-label="Example conversation with Nolan">
+            <div class="nolan-chat__rec">
+              <img src="../public/images/get-out.jpg" alt="Still from Get Out (2017): a tight, centred close-up of Chris with tears on his face" loading="lazy" />
+              <div>
+                <p class="nolan-chat__match">✦ Nolan recognised · 96% match</p>
+                <p class="nolan-chat__film"><em>Get Out</em></p>
+                <p class="nolan-chat__meta">2017 · Jordan Peele · the hypnosis scene</p>
+              </div>
+            </div>
+            <ul class="nolan-chat__facts">
+              <li><span>Camera</span>Locked off at eye level</li>
+              <li><span>Lens</span>Wide aperture, tight on the face</li>
+              <li><span>Light</span>One soft key, dark surround</li>
+              <li><span>Movement</span>Slow push-in</li>
+            </ul>
+            <p class="nolan-chat__you" data-step>Why does it feel so claustrophobic?</p>
+            <div class="nolan-chat__reply" data-step>
+              <span class="nolan-chat__mini" aria-hidden="true">N</span>
+              <div class="nolan-chat__bubble">
+                <span class="nolan-chat__name">Nolan</span>
+                <span class="nolan-chat__typing" aria-hidden="true"><i></i><i></i><i></i></span>
+                <span class="nolan-chat__answer">The frame is almost all face: no headroom, no space to the sides, and the background falls into darkness. There's nowhere for your eye to escape, just like Chris.</span>
+              </div>
+            </div>
+            <!-- Live conversation: new questions and Nolan's streamed answers go here (script.js, "Nolan live chat") -->
+            <div class="nolan-chat__thread" id="nolan-thread" aria-live="polite"></div>
+            <div class="nolan-chat__chips" data-step>
+              <button type="button">Show me a similar shot</button><button type="button">How do I light this?</button><button type="button">What lens is this?</button>
+            </div>
+            <form class="nolan-chat__form" id="nolan-form" data-step>
+              <label class="nolan-chat__attach" title="Attach a film still">
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" />
+                <span aria-hidden="true">+</span><span class="sr-only">Attach a film still</span>
+              </label>
+              <input class="nolan-chat__input" type="text" name="question" placeholder="Ask Nolan about a shot…" autocomplete="off" maxlength="1000" aria-label="Your question for Nolan" />
+              <button class="nolan-chat__send" type="submit">Ask</button>
+            </form>
+            <p class="nolan-chat__file" id="nolan-file" hidden></p>
+          </div>
+        </div>
+
+        <!-- What Nolan does -->
+        <div class="nolan__abilities">
+          <article class="ability" data-reveal>
+            <span class="ability__num">01</span>
+            <h3 class="ability__title">Recognise</h3>
+            <p class="ability__desc">Point your phone at a TV or laptop, or upload a still. Nolan names the film, the director and the scene.</p>
+          </article>
+          <article class="ability" data-reveal>
+            <span class="ability__num">02</span>
+            <h3 class="ability__title">Explain</h3>
+            <p class="ability__desc">Camera, lens, light and movement: how the shot was likely made, in plain words, not jargon.</p>
+          </article>
+          <article class="ability" data-reveal>
+            <span class="ability__num">03</span>
+            <h3 class="ability__title">Answer</h3>
+            <p class="ability__desc">Ask anything about the frame. Nolan answers like a tutor, then links the lesson and a way to recreate it.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         4. HOW IT WORKS
+         ========================================================= -->
+    <section class="section how" id="how" aria-labelledby="how-title">
+      <div class="container">
+        <header class="section__head" data-reveal>
+          <p class="eyebrow">Scene 03 — How it works</p>
+          <h2 class="section__title" id="how-title" data-split>Three steps from <em>watching</em> to <em>making.</em></h2>
+        </header>
+
+        <ol class="steps">
+          <li class="step" data-reveal>
+            <span class="step__num">i.</span>
+            <h3 class="step__title">Upload or pick a frame</h3>
+            <p class="step__desc">Drop in a still from your camera roll or choose a moment from a film in the library.</p>
+          </li>
+          <li class="step" data-reveal>
+            <span class="step__num">ii.</span>
+            <h3 class="step__title">Ask <em>Nolan</em> for the breakdown</h3>
+            <p class="step__desc">Nolan, the AI tutor, reads the shot type, angle, lighting and the director's likely intent in seconds.</p>
+          </li>
+          <li class="step" data-reveal>
+            <span class="step__num">iii.</span>
+            <h3 class="step__title">Learn and recreate</h3>
+            <p class="step__desc">Open the linked lesson, then try the shot yourself with the gear you already own.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Two rows of giant italic words that slide in opposite directions as you scroll (decorative) -->
+    <div class="scroll-band" aria-hidden="true">
+      <div class="scroll-band__row" data-band="1">Light <i>✦</i> Shadow <i>✦</i> Framing <i>✦</i> Colour <i>✦</i> Light <i>✦</i> Shadow <i>✦</i> Framing <i>✦</i> Colour <i>✦</i></div>
+      <div class="scroll-band__row scroll-band__row--outline" data-band="-1">Intent <i>✦</i> Blocking <i>✦</i> Rhythm <i>✦</i> Mood <i>✦</i> Intent <i>✦</i> Blocking <i>✦</i> Rhythm <i>✦</i> Mood <i>✦</i></div>
+    </div>
+
+    <!-- =========================================================
+         5. MISSION
+         ========================================================= -->
+    <section class="section mission" id="mission" aria-labelledby="mission-title">
+      <div class="container mission__inner">
+        <p class="eyebrow" data-reveal>Scene 04 — Mission</p>
+        <!-- data-scrub: each word brightens as you scroll through the section -->
+        <h2 class="mission__statement" id="mission-title" data-scrub>
+          Film school shouldn't depend on tuition or gear. ReFrame brings cinematography to
+          <em>students and community learners</em> everywhere.
+        </h2>
+        <div class="mission__cols">
+          <p data-reveal>Not everyone can attend film school or afford professional equipment. ReFrame gives anyone with a phone a practical way to build real cinematography skills by understanding why a shot works, not just that it does.</p>
+          <p data-reveal>Your progress is tracked over time. Watch your vocabulary grow, revisit techniques you've mastered, and see how your own shots improve lesson by lesson.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         6. SHOWCASE (screens scroll sideways on their own)
+         ========================================================= -->
+    <section class="showcase" id="showcase" aria-labelledby="showcase-title">
+      <div class="container">
+        <header class="section__head" data-reveal>
+          <p class="eyebrow">Scene 05 — Showcase</p>
+          <h2 class="section__title" id="showcase-title" data-split>See it <em>in action.</em></h2>
+          <p class="showcase__hint">Drag, swipe or use the arrows →</p>
+        </header>
+      </div>
+
+      <div class="showcase__stage" data-scale>
+        <!-- App screen mockups, built in HTML/CSS (see "App screen mockups" in styles.css).
+             Sizes use cqw (1cqw = 1% of the screen width), so they scale with the screen.
+             To use real screenshots later, replace a .ui block with <img src="..." alt="..."> -->
+        <!-- Scroll the page down as normal; move through the screens sideways here
+             (drag with the mouse, swipe, shift + wheel, arrow keys or the buttons below) -->
+        <div class="showcase__scroller" id="showcase-scroller" tabindex="0" aria-label="App screens. Scroll sideways to see all six.">
+        <div class="showcase__row">
+
+          <!-- Screen 1: Upload -->
+          <figure class="shot">
+            <div class="screen" role="img" aria-label="App screen: upload a still or pick a frame from the film library">
+              <div class="ui">
+              <div class="ui-status"><span>9:41</span><span class="ui-status__icons"><i></i><i></i><b></b></span></div>
+              <div class="ui-body">
+                <p class="ui-kicker">New analysis</p>
+                <p class="ui-title">What are we <em>watching?</em></p>
+                <div class="ui-drop">
+                  <span class="ui-drop__plus">+</span>
+                  <span class="ui-drop__title">Upload a still</span>
+                  <span class="ui-small">JPG or PNG · camera roll</span>
+                </div>
+                <p class="ui-kicker">Or pick from the library</p>
+                <div class="ui-library">
+                  <span class="ui-tile"><img src="../public/images/in-the-mood-for-love.jpg" alt="" loading="lazy" /><span>In the Mood for Love</span></span>
+                  <span class="ui-tile"><img src="../public/images/get-out.jpg" alt="" loading="lazy" /><span>Get Out</span></span>
+                  <span class="ui-tile"><img src="../public/images/social-network.jpg" alt="" loading="lazy" /><span>The Social Network</span></span>
+                  <span class="ui-tile"><img src="../public/images/phantom-thread.jpg" alt="" loading="lazy" /><span>Phantom Thread</span></span>
+                </div>
+              </div>
+              <div class="ui-tabs">
+                <span class="ui-tab is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><circle cx="12" cy="12" r="3"/></svg>Analyse</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg>Lessons</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>Recreate</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18M6 16v-5M11 16V7M16 16v-8M21 16V4"/></svg>Progress</span>
+              </div>
+              </div>
+            </div>
+            <figcaption class="shot__caption"><span>01</span> Upload</figcaption>
+          </figure>
+
+          <!-- Screen 2: Analysis -->
+          <figure class="shot">
+            <div class="screen screen--tall" role="img" aria-label="App screen: AI analysis of a Get Out still showing shot type, angle, lighting and the director's intent">
+              <div class="ui">
+              <div class="ui-status"><span>9:41</span><span class="ui-status__icons"><i></i><i></i><b></b></span></div>
+              <div class="ui-body">
+                <div class="ui-still"><img src="../public/images/get-out.jpg" alt="" loading="lazy" /></div>
+                <div class="ui-row">
+                  <p class="ui-film"><em>Get Out</em></p>
+                  <p class="ui-small">2017 · Jordan Peele</p>
+                </div>
+                <div class="ui-chips">
+                  <span class="ui-chip">Extreme close-up</span>
+                  <span class="ui-chip">Eye level</span>
+                  <span class="ui-chip">Low-key light</span>
+                  <span class="ui-chip">Centre framing</span>
+                </div>
+                <div class="ui-meter"><span class="ui-small">Shot match</span><span class="ui-meter__bar"><i style="width:94%"></i></span><span class="ui-small">94%</span></div>
+                <div class="ui-card">
+                  <p class="ui-kicker">Director's intent</p>
+                  <p class="ui-quote">The centred, unbroken stare traps us inside Chris's paralysis. We can't look away either.</p>
+                </div>
+                <span class="ui-btn">Open lesson →</span>
+              </div>
+              <div class="ui-tabs">
+                <span class="ui-tab is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><circle cx="12" cy="12" r="3"/></svg>Analyse</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg>Lessons</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>Recreate</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18M6 16v-5M11 16V7M16 16v-8M21 16V4"/></svg>Progress</span>
+              </div>
+              </div>
+            </div>
+            <figcaption class="shot__caption"><span>02</span> Analysis</figcaption>
+          </figure>
+
+          <!-- Screen: Nolan (AI tutor) -->
+          <figure class="shot">
+            <div class="screen screen--tall" role="img" aria-label="App screen: Nolan, the AI film tutor, recognising a Get Out still, explaining how it was filmed and answering a question">
+              <div class="ui">
+              <div class="ui-status"><span>9:41</span><span class="ui-status__icons"><i></i><i></i><b></b></span></div>
+              <div class="ui-body">
+                <p class="ui-kicker">✦ Nolan · AI film tutor</p>
+                <div class="ui-card ui-rec">
+                  <span class="ui-rec__img"><img src="../public/images/get-out.jpg" alt="" loading="lazy" /></span>
+                  <span class="ui-rec__text">
+                    <span class="ui-kicker ui-red">Recognised · 96%</span>
+                    <span class="ui-film"><em>Get Out</em></span>
+                    <span class="ui-small">2017 · Jordan Peele</span>
+                  </span>
+                </div>
+                <div class="ui-facts">
+                  <span><b>Camera</b>Eye level, centred</span>
+                  <span><b>Lens</b>Wide aperture</span>
+                  <span><b>Light</b>One soft key</span>
+                  <span><b>Move</b>Slow push-in</span>
+                </div>
+                <span class="ui-bubble ui-bubble--you">Why so claustrophobic?</span>
+                <span class="ui-nolan-row"><span class="ui-nolan">N</span><span class="ui-bubble ui-bubble--nolan">No headroom, no room at the sides, and the background falls into darkness. Nowhere to escape, just like Chris.</span></span>
+                <span class="ui-ask"><span>Ask Nolan about this shot…</span><i>↑</i></span>
+              </div>
+              <div class="ui-tabs">
+                <span class="ui-tab is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><circle cx="12" cy="12" r="3"/></svg>Analyse</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg>Lessons</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>Recreate</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18M6 16v-5M11 16V7M16 16v-8M21 16V4"/></svg>Progress</span>
+              </div>
+              </div>
+            </div>
+            <figcaption class="shot__caption"><span>03</span> Nolan <em class="ui-red">AI</em></figcaption>
+          </figure>
+
+          <!-- Screen 3: Lesson -->
+          <figure class="shot">
+            <div class="screen" role="img" aria-label="App screen: a four-minute lesson on shallow depth of field, using a still from The Social Network">
+              <div class="ui">
+              <div class="ui-status"><span>9:41</span><span class="ui-status__icons"><i></i><i></i><b></b></span></div>
+              <div class="ui-body">
+                <p class="ui-kicker">Lesson 04 · 4 min</p>
+                <p class="ui-title">Shallow <em>depth</em> of field</p>
+                <div class="ui-steps"><i class="is-done"></i><i class="is-done"></i><i></i><i></i><i></i></div>
+                <div class="ui-still ui-still--plain"><img src="../public/images/social-network.jpg" alt="" loading="lazy" /></div>
+                <p class="ui-text">A wide aperture keeps only one plane sharp. Fincher puts the equation in focus and lets the people blur: the idea matters more than them.</p>
+                <div class="ui-card ui-diagram">
+                  <svg viewBox="0 0 200 64" fill="none" stroke="currentColor" stroke-width="1">
+                    <ellipse cx="30" cy="32" rx="6" ry="22"/>
+                    <path d="M36 12 L120 32 L36 52" stroke-opacity=".5"/>
+                    <path d="M120 8 V56" stroke="#c23a2b" stroke-width="1.5"/>
+                    <path d="M150 14 V50 M180 18 V46" stroke-opacity=".25" stroke-dasharray="3 3"/>
+                  </svg>
+                  <span class="ui-small">f/1.8 · focus plane · blur</span>
+                </div>
+                <span class="ui-btn">Mark as learned</span>
+              </div>
+              <div class="ui-tabs">
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><circle cx="12" cy="12" r="3"/></svg>Analyse</span>
+                <span class="ui-tab is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg>Lessons</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>Recreate</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18M6 16v-5M11 16V7M16 16v-8M21 16V4"/></svg>Progress</span>
+              </div>
+              </div>
+            </div>
+            <figcaption class="shot__caption"><span>04</span> Lesson</figcaption>
+          </figure>
+
+          <!-- Screen 4: Recreate -->
+          <figure class="shot">
+            <div class="screen screen--tall" role="img" aria-label="App screen: guide to recreating the Phantom Thread spotlight shot with a phone and a desk lamp">
+              <div class="ui">
+              <div class="ui-status"><span>9:41</span><span class="ui-status__icons"><i></i><i></i><b></b></span></div>
+              <div class="ui-body">
+                <p class="ui-kicker">Recreate · Phantom Thread</p>
+                <p class="ui-title">One beam, <em>one lamp.</em></p>
+                <div class="ui-compare">
+                  <span class="ui-compare__item"><img src="../public/images/phantom-thread.jpg" alt="" loading="lazy" /><span class="ui-small">Original</span></span>
+                  <span class="ui-compare__item ui-compare__item--empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l2-3h4l2 3"/></svg>
+                    <span class="ui-small">Your take</span>
+                  </span>
+                </div>
+                <ul class="ui-checklist">
+                  <li class="is-done">Phone at chest height</li>
+                  <li class="is-done">One lamp, high and behind</li>
+                  <li>Ceiling lights off, a little haze</li>
+                </ul>
+                <div class="ui-chips">
+                  <span class="ui-chip">Phone</span>
+                  <span class="ui-chip">Desk lamp</span>
+                  <span class="ui-chip">Baking paper</span>
+                </div>
+                <span class="ui-btn ui-btn--red">Open camera</span>
+              </div>
+              <div class="ui-tabs">
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><circle cx="12" cy="12" r="3"/></svg>Analyse</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg>Lessons</span>
+                <span class="ui-tab is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>Recreate</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18M6 16v-5M11 16V7M16 16v-8M21 16V4"/></svg>Progress</span>
+              </div>
+              </div>
+            </div>
+            <figcaption class="shot__caption"><span>05</span> Recreate</figcaption>
+          </figure>
+
+          <!-- Screen 5: Progress -->
+          <figure class="shot">
+            <div class="screen" role="img" aria-label="App screen: learning progress with shots analysed, a streak, a weekly chart and skill levels">
+              <div class="ui">
+              <div class="ui-status"><span>9:41</span><span class="ui-status__icons"><i></i><i></i><b></b></span></div>
+              <div class="ui-body">
+                <p class="ui-kicker">Your reel</p>
+                <p class="ui-title">23 shots <em>read.</em></p>
+                <div class="ui-card ui-streak">
+                  <span class="ui-small">7-day streak</span>
+                  <span class="ui-streak__dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                </div>
+                <div class="ui-card ui-chart">
+                  <svg viewBox="0 0 200 70" preserveAspectRatio="none">
+                    <path d="M0 62 L28 55 L57 58 L85 44 L114 40 L142 28 L171 22 L200 10 L200 70 L0 70 Z" fill="#c23a2b" fill-opacity=".18"/>
+                    <path d="M0 62 L28 55 L57 58 L85 44 L114 40 L142 28 L171 22 L200 10" fill="none" stroke="#c23a2b" stroke-width="2"/>
+                  </svg>
+                  <span class="ui-small">Shots per week · last 8 weeks</span>
+                </div>
+                <div class="ui-skill"><span class="ui-small">Lighting</span><span class="ui-meter__bar"><i style="width:80%"></i></span></div>
+                <div class="ui-skill"><span class="ui-small">Composition</span><span class="ui-meter__bar"><i style="width:65%"></i></span></div>
+                <div class="ui-skill"><span class="ui-small">Movement</span><span class="ui-meter__bar"><i style="width:30%"></i></span></div>
+              </div>
+              <div class="ui-tabs">
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><circle cx="12" cy="12" r="3"/></svg>Analyse</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z"/></svg>Lessons</span>
+                <span class="ui-tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>Recreate</span>
+                <span class="ui-tab is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 20h18M6 16v-5M11 16V7M16 16v-8M21 16V4"/></svg>Progress</span>
+              </div>
+              </div>
+            </div>
+            <figcaption class="shot__caption"><span>06</span> Progress</figcaption>
+          </figure>
+        </div>
+        </div>
+
+        <div class="showcase__controls">
+          <button class="showcase__btn" id="showcase-prev" aria-label="Previous screen">←</button>
+          <span class="showcase__count" id="showcase-count" aria-live="polite">01 / 06</span>
+          <button class="showcase__btn" id="showcase-next" aria-label="Next screen">→</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         7. CALL TO ACTION
+         ========================================================= -->
+    <section class="section cta" id="download" aria-labelledby="cta-title">
+      <div class="container cta__inner">
+        <h2 class="cta__title" id="cta-title" data-split>Start <em>reading</em> film <em>today.</em></h2>
+        <p class="cta__sub" data-reveal>Free to download. Every frame you study makes you a better filmmaker.</p>
+        <div class="cta__actions" data-reveal>
+          <!-- Replace href="#" with your App Store / Google Play links -->
+          <a href="#" class="btn btn--primary btn--lg">Download ReFrame</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================
+       8. FOOTER
+       ========================================================= -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <!-- Closing credit -->
+      <p class="footer__credit" data-reveal><span class="eyebrow">A film education by ReFrame</span><br />Directed by <em>you.</em></p>
+    </div>
+
+    <!-- Popcorn finale: when this scrolls into view, kernels pop out of the bucket
+         and pile up (canvas, drawn by script.js → "Popcorn finale").
+         Click the bucket to pop more. -->
+    <div class="popcorn" id="popcorn">
+      <canvas class="popcorn__canvas" id="popcorn-canvas" aria-hidden="true"></canvas>
+      <p class="popcorn__label"><span>Intermission</span> · enjoy the show</p>
+      <button class="popcorn__bucket" id="popcorn-bucket" type="button" aria-label="Pop more popcorn">
+        <svg viewBox="0 0 170 190" aria-hidden="true">
+          <defs>
+            <clipPath id="bucket-shape"><path d="M8 26 L162 26 L140 186 L30 186 Z"/></clipPath>
+          </defs>
+          <g clip-path="url(#bucket-shape)">
+            <rect x="0" y="20" width="170" height="170" fill="#f5f5f3"/>
+            <rect x="8" y="20" width="22" height="170" fill="#c23a2b"/>
+            <rect x="52" y="20" width="22" height="170" fill="#c23a2b"/>
+            <rect x="96" y="20" width="22" height="170" fill="#c23a2b"/>
+            <rect x="140" y="20" width="22" height="170" fill="#c23a2b"/>
+            <!-- soft shading so it reads as round -->
+            <rect x="0" y="20" width="170" height="170" fill="url(#bucket-shade)"/>
+          </g>
+          <defs>
+            <linearGradient id="bucket-shade" x1="0" x2="1">
+              <stop offset="0" stop-color="#000" stop-opacity="0.35"/>
+              <stop offset="0.35" stop-color="#000" stop-opacity="0"/>
+              <stop offset="0.7" stop-color="#000" stop-opacity="0"/>
+              <stop offset="1" stop-color="#000" stop-opacity="0.4"/>
+            </linearGradient>
+          </defs>
+          <!-- rim -->
+          <rect x="4" y="18" width="162" height="12" rx="6" fill="#f5f5f3"/>
+          <rect x="4" y="18" width="162" height="12" rx="6" fill="url(#bucket-shade)"/>
+          <!-- label -->
+          <ellipse cx="85" cy="104" rx="46" ry="22" fill="#0a0a0a"/>
+          <text x="85" y="111" text-anchor="middle" font-family="Instrument Serif, Georgia, serif" font-size="22" fill="#f5f5f3">Re<tspan font-style="italic">Frame</tspan></text>
+        </svg>
+      </button>
+      <p class="popcorn__hint">Click the bucket for more</p>
+    </div>
+
+    <div class="container footer__inner footer__inner--bottom">
+      <a href="#top" class="nav__logo footer__logo">Re<span>Frame</span></a>
+      <ul class="footer__links">
+        <li><a class="link" href="#features">Features</a></li>
+        <li><a class="link" href="#nolan">Nolan</a></li>
+        <li><a class="link" href="#mission">Mission</a></li>
+        <li><a class="link" href="#">Privacy</a></li>
+        <li><a class="link" href="#">Contact</a></li>
+      </ul>
+      <p class="footer__copy">&copy; <span id="year">2026</span> ReFrame. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+  <!-- Three.js (UMD build, so the page still works when opened straight from disk) + the hero 3D scene -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js" defer></script>
+  <!-- Film camera + stage light meshes exported from Blender (blender/build_models.py) -->
+  <script src="../public/models/reframe-models.js" defer></script>
+  <script src="three-scene.js" defer></script>
+</body>
+</html>
