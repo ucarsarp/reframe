@@ -111,6 +111,20 @@ function errorResponse(err: unknown) {
   return new Response(SORRY, { status: status === 429 ? 429 : 502, headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
 }
 
+/* ---------- Which AI Nolan uses ----------
+   1. ANTHROPIC_API_KEY set: Claude directly from Anthropic.
+   2. On Vercel (or AI_GATEWAY_API_KEY set): Claude through Vercel AI Gateway. Vercel signs
+      the site in automatically, so there's no key to copy; the team needs AI Gateway credit.
+   3. Neither: Nolan's built-in answers (nolan-offline.server.ts). */
+const GATEWAY_MODEL = 'anthropic/claude-opus-5.5'
+
+function connect(request: Request) {
+  if (process.env.ANTHROPIC_API_KEY) return { client: new Anthropic(), model: MODEL, gateway: false }
+  const token = process.env.AI_GATEWAY_API_KEY || request.headers.get('x-vercel-oidc-token') || process.env.VERCEL_OIDC_TOKEN
+  if (!token) return null
+  return { client: new Anthropic({ apiKey: token, baseURL: 'https://ai-gateway.vercel.sh' }), model: GATEWAY_MODEL, gateway: true }
+}
+
 /* ---------- POST /api/nolan ----------
    Body: { messages: [{ role: 'user' | 'assistant', text, image?: { media_type, data } }] }
    Streams Nolan's reply back as plain text, piece by piece. */
@@ -124,26 +138,33 @@ export async function handleNolan(request: Request): Promise<Response> {
   const messages = toClaudeMessages(body?.messages)
   if (!messages) return new Response('Bad request.', { status: 400 })
 
-  // No API key: answer from Nolan's built-in script instead (nolan-offline.server.ts)
-  if (!process.env.ANTHROPIC_API_KEY) {
+  // The built-in script (nolan-offline.server.ts): used when no AI is set up, or the AI is unavailable
+  const scripted = () => {
     const last = messages.at(-1)!
     const blocks = Array.isArray(last.content) ? last.content : []
     const question = blocks.map((b) => (b.type === 'text' ? b.text : '')).join(' ')
     const answer = offlineAnswer(question, blocks.some((b) => b.type === 'image'), Math.floor(messages.length / 2)) // 0 for the first question
-    return new Response(streamText(answer, request.signal), { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' } })
+    return new Response(streamText(answer, request.signal), { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Nolan-Source': 'script' } })
   }
 
-  const client = new Anthropic() // reads ANTHROPIC_API_KEY from .env
-  const stream = client.beta.messages.stream({
-    model: MODEL,
+  const ai = connect(request)
+  if (!ai) return scripted()
+
+  const params = {
+    model: ai.model,
     max_tokens: 4096,
-    output_config: { effort: 'low' }, // quick, chatty answers
-    // If a safety check declines a request, the API retries it on another model
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default',
+    output_config: { effort: 'low' as const }, // quick, chatty answers
     system: NOLAN,
     messages: [...(await demo(new URL(request.url).origin)), ...messages],
-  })
+  }
+  const stream = ai.gateway
+    ? ai.client.beta.messages.stream(params)
+    : ai.client.beta.messages.stream({
+        ...params,
+        // If a safety check declines a request, the API retries it on another model
+        betas: ['server-side-fallback-2026-07-01'],
+        fallbacks: 'default',
+      })
 
   // Stop paying for tokens if the visitor closes the page mid-answer
   request.signal.addEventListener('abort', () => stream.abort())
@@ -151,7 +172,11 @@ export async function handleNolan(request: Request): Promise<Response> {
   // Wait for the first event so API errors (bad key, rate limit) still get a proper status code
   const events = stream[Symbol.asyncIterator]()
   let first: IteratorResult<Anthropic.Beta.BetaRawMessageStreamEvent>
-  try { first = await events.next() } catch (err) { return errorResponse(err) }
+  try { first = await events.next() } catch (err) {
+    if (err instanceof Anthropic.APIError && err.status === 429) return errorResponse(err)
+    console.error('Nolan AI unavailable, using built-in answers:', err instanceof Error ? err.message : err)
+    return scripted()
+  }
 
   const encoder = new TextEncoder()
   const reply = new ReadableStream<Uint8Array>({
@@ -176,5 +201,5 @@ export async function handleNolan(request: Request): Promise<Response> {
     cancel() { stream.abort() },
   })
 
-  return new Response(reply, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' } })
+  return new Response(reply, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Nolan-Source': ai.gateway ? 'ai-gateway' : 'anthropic' } })
 }
