@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- ReFrame: an R whose bowl holds a lens, inside viewfinder crop marks, with a red REC dot. -->
+  <path d="M10 26V10h16M74 10h16v16M90 74v16H74M26 90H10V74" stroke="currentColor" stroke-width="3"/>
+  <path fill="currentColor" fill-rule="evenodd" d="M30 26h22a15 15 0 0 1 0 30h-1l17 20H56L41 57.5V76H30V26Zm22 7a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z"/>
+  <circle cx="52" cy="41" r="3" fill="currentColor"/>
+  <circle cx="80" cy="20" r="3.4" fill="#c23a2b"/>
+</svg>

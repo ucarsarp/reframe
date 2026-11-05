@@ -17,6 +17,7 @@ export const Route = createRootRoute({
     links: [
       // Fonts: Instrument Serif (display, with italics) + Inter (body) + IBM Plex Mono (labels).
       // Change here and in the CSS variables at the top of src/styles.css.
+      { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
       {

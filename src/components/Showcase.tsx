@@ -1,4 +1,5 @@
 /* Showcase: converted from the original index.html. Edit the text and markup here. */
+import { NolanMark } from './Logos'
 export function Showcase() {
   return (
     <>
@@ -112,7 +113,7 @@ export function Showcase() {
                     <span><b>Move</b>Slow push-in</span>
                   </div>
                   <span className="ui-bubble ui-bubble--you">Why so claustrophobic?</span>
-                  <span className="ui-nolan-row"><span className="ui-nolan">N</span><span className="ui-bubble ui-bubble--nolan">No headroom, no room at the sides, and the background falls into darkness. Nowhere to escape, just like Chris.</span></span>
+                  <span className="ui-nolan-row"><span className="ui-nolan"><NolanMark /></span><span className="ui-bubble ui-bubble--nolan">No headroom, no room at the sides, and the background falls into darkness. Nowhere to escape, just like Chris.</span></span>
                   <span className="ui-ask"><span>Ask Nolan about this shot…</span><i>↑</i></span>
                 </div>
                 <div className="ui-tabs">

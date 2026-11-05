@@ -1,4 +1,5 @@
 /* MeetNolan: converted from the original index.html. Edit the text and markup here. */
+import { NolanMark } from './Logos'
 export function MeetNolan() {
   return (
     <>
@@ -15,7 +16,7 @@ export function MeetNolan() {
           </header>
 
           <div className="nolan__stage" data-reveal="">
-            <div className="nolan__avatar" aria-hidden="true"><span>N</span></div>
+            <div className="nolan__avatar" aria-hidden="true"><NolanMark /></div>
 
             {/* Example conversation */}
             <div className="nolan-chat" id="nolan-chat" aria-label="Example conversation with Nolan">
@@ -35,7 +36,7 @@ export function MeetNolan() {
               </ul>
               <p className="nolan-chat__you" data-step="">Why does it feel so claustrophobic?</p>
               <div className="nolan-chat__reply" data-step="">
-                <span className="nolan-chat__mini" aria-hidden="true">N</span>
+                <span className="nolan-chat__mini" aria-hidden="true"><NolanMark /></span>
                 <div className="nolan-chat__bubble">
                   <span className="nolan-chat__name">Nolan</span>
                   <span className="nolan-chat__typing" aria-hidden="true"><i></i><i></i><i></i></span>

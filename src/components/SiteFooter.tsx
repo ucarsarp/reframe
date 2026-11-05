@@ -1,4 +1,5 @@
 /* SiteFooter: converted from the original index.html. Edit the text and markup here. */
+import { ReFrameMark } from './Logos'
 export function SiteFooter() {
   return (
     <>
@@ -51,7 +52,7 @@ export function SiteFooter() {
       </div>
 
       <div className="container footer__inner footer__inner--bottom">
-        <a href="#top" className="nav__logo footer__logo">Re<span>Frame</span></a>
+        <a href="#top" className="nav__logo footer__logo"><ReFrameMark className="nav__mark" />Re<span>Frame</span></a>
         <ul className="footer__links">
           <li><a className="link" href="#features">Features</a></li>
           <li><a className="link" href="#nolan">Nolan</a></li>

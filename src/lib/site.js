@@ -437,7 +437,8 @@ export function initSite() {
       typing.innerHTML = '<i></i><i></i><i></i>';
       const answer = el('span', 'nolan-chat__answer');
       bubble.append(el('span', 'nolan-chat__name', 'Nolan'), typing, answer);
-      const mini = el('span', 'nolan-chat__mini', 'N');
+      const mini = el('span', 'nolan-chat__mini');
+      mini.innerHTML = chat.querySelector('.nolan-chat__mini')?.innerHTML ?? ''; // the Nolan mark
       mini.setAttribute('aria-hidden', 'true');
       reply.append(mini, bubble);
       thread.append(you, reply);

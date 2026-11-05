@@ -1,4 +1,5 @@
 /* SiteHeader: converted from the original index.html. Edit the text and markup here. */
+import { ReFrameMark } from './Logos'
 export function SiteHeader() {
   return (
     <>
@@ -33,7 +34,7 @@ export function SiteHeader() {
         </button>
 
         <div className="nav__center">
-          <a href="#top" className="nav__logo" aria-label="ReFrame, back to top">Re<span>Frame</span></a>
+          <a href="#top" className="nav__logo" aria-label="ReFrame, back to top"><ReFrameMark className="nav__mark" />Re<span>Frame</span></a>
           <nav className="nav__menu" id="nav-menu" aria-label="Primary">
             <ul className="nav__links">
               <li><a className="link" href="#features">Features</a></li>
