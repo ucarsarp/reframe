@@ -1,6 +1,7 @@
 /* The HTML document around every page: <head> (title, fonts, CSS) and <body>. */
 import type { ReactNode } from 'react'
 import { Outlet, createRootRoute, HeadContent, Scripts } from '@tanstack/react-router'
+import { Analytics } from '@vercel/analytics/react'
 import appCss from '../styles.css?url'
 
 export const Route = createRootRoute({
@@ -48,6 +49,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       </head>
       <body className="in-intro" suppressHydrationWarning>
         {children}
+        <Analytics />
         <Scripts />
       </body>
     </html>
