@@ -64,17 +64,20 @@ const MAX_TURNS = 20;              // messages of history kept per request
 const MAX_TEXT = 1000;             // characters per question
 const MAX_IMAGE = 5 * 1024 * 1024; // base64 characters per uploaded still
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-const RATE_LIMIT = 20;             // questions per visitor...
+const RATE_LIMIT = 15;             // questions per visitor...
 const RATE_WINDOW = 10 * 60 * 1000; // ...per 10 minutes
+const DAILY_LIMIT = 60;            // and per visitor per day
+const DAY = 24 * 60 * 60 * 1000
 const MAX_BODY = 8 * 1024 * 1024;  // bytes per request (same as the old express.json limit)
 const hits = new Map<string, number[]>()
 
 function rateLimited(ip: string) {
   const now = Date.now()
-  const recent = (hits.get(ip) || []).filter((t) => now - t < RATE_WINDOW)
-  recent.push(now)
-  hits.set(ip, recent)
-  return recent.length > RATE_LIMIT
+  const today = (hits.get(ip) || []).filter((t) => now - t < DAY)
+  today.push(now)
+  hits.set(ip, today)
+  const recent = today.filter((t) => now - t < RATE_WINDOW)
+  return recent.length > RATE_LIMIT || today.length > DAILY_LIMIT
 }
 
 type Turn = { role?: unknown; text?: unknown; image?: { media_type?: unknown; data?: unknown } }
@@ -130,7 +133,7 @@ function connect(request: Request) {
    Streams Nolan's reply back as plain text, piece by piece. */
 export async function handleNolan(request: Request): Promise<Response> {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'local'
-  if (rateLimited(ip)) return new Response('Too many questions, try again in a few minutes.', { status: 429 })
+  if (rateLimited(ip)) return new Response("You've asked a lot of questions. Give me a short break and try again later.", { status: 429 })
   if (Number(request.headers.get('content-length') || 0) > MAX_BODY) return new Response('That image is too large.', { status: 413 })
 
   let body: { messages?: unknown } | null = null
@@ -152,7 +155,7 @@ export async function handleNolan(request: Request): Promise<Response> {
 
   const params = {
     model: ai.model,
-    max_tokens: 4096,
+    max_tokens: 1500, // caps the cost of one answer (thinking + reply)
     output_config: { effort: 'low' as const }, // quick, chatty answers
     system: NOLAN,
     messages: [...(await demo(new URL(request.url).origin)), ...messages],
