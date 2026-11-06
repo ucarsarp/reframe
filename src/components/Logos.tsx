@@ -1,27 +1,47 @@
-/* Logos: the ReFrame and Nolan marks as inline SVG, so they take the text colour (currentColor).
-   The same drawings live in public/brand/ as standalone files (favicon, downloads). */
+/* Logos: the final ReFrame title and Nolan marks as inline SVG, so they take the text colour
+   (currentColor). The shapes come from logo-paths.ts, generated from the "logo finals" designs. */
+import { NOLAN, TITLE } from './logo-paths'
 
-// Nolan: two mirrored slabs make the N; it reads the same upside down (a Tenet palindrome).
-// The thin red line is the eye-line running through the frame.
-export function NolanMark({ className }: { className?: string }) {
-  const slab = 'M24 76V24a4 4 0 0 1 4-4c10.5 0 19 12 19 28v28a4 4 0 0 1-4 4H28a4 4 0 0 1-4-4Z'
+// ReFrame title (Letterbox): the whole word between two widescreen rules, red record dot top right
+export function ReFrameTitle({ className }: { className?: string }) {
+  const { viewBox, rules, word, dot } = TITLE
   return (
-    <svg className={className} viewBox="0 0 100 100" fill="none" aria-hidden="true">
-      <path fill="currentColor" d={slab} />
-      <path fill="currentColor" d={slab} transform="rotate(180 50 50)" />
-      <path d="M8 50h84" stroke="var(--accent-red)" strokeWidth="1.4" />
+    <svg className={className} viewBox={viewBox.join(' ')} fill="none" aria-hidden="true">
+      <path d={rules} stroke="currentColor" strokeOpacity=".4" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+      <path d={word} fill="currentColor" />
+      <circle className="mark__rec" cx={dot.cx} cy={dot.cy} r={dot.r} fill="var(--accent-red)" />
     </svg>
   )
 }
 
-// ReFrame: an R whose bowl holds a lens, inside viewfinder crop marks, with a red REC dot.
-export function ReFrameMark({ className }: { className?: string }) {
+// Nolan's lens: red barrel, darker inner ring, dark aperture and a glint of light
+function Lens({ cx, cy, r }: { cx: number; cy: number; r: number }) {
+  return (
+    <>
+      <circle cx={cx} cy={cy} r={r} fill="var(--accent-red)" />
+      <circle cx={cx} cy={cy} r={r * 0.7} stroke="#0a0a0a" strokeOpacity=".28" strokeWidth={r * 0.06} />
+      <circle cx={cx} cy={cy} r={r * 0.42} fill="#0a0a0a" />
+      <circle cx={cx - r * 0.15} cy={cy - r * 0.15} r={r * 0.11} fill="#f5f5f3" />
+    </>
+  )
+}
+
+// Nolan (The eye): "nolan" with the o as the red lens
+export function NolanWordmark({ className }: { className?: string }) {
+  const { viewBox, letters, lens } = NOLAN
+  return (
+    <svg className={className} viewBox={viewBox.join(' ')} fill="none" aria-hidden="true">
+      <path d={letters} fill="currentColor" />
+      <Lens {...lens} />
+    </svg>
+  )
+}
+
+// Nolan's avatar: the lens on its own
+export function NolanMark({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 100 100" fill="none" aria-hidden="true">
-      <path d="M10 26V10h16M74 10h16v16M90 74v16H74M26 90H10V74" stroke="currentColor" strokeWidth="3" />
-      <path fill="currentColor" fillRule="evenodd" d="M30 26h22a15 15 0 0 1 0 30h-1l17 20H56L41 57.5V76H30V26Zm22 7a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z" />
-      <circle cx="52" cy="41" r="3" fill="currentColor" />
-      <circle className="mark__rec" cx="80" cy="20" r="3.4" fill="var(--accent-red)" />
+      <Lens cx={50} cy={50} r={50} />
     </svg>
   )
 }

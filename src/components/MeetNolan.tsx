@@ -1,5 +1,5 @@
 /* MeetNolan: converted from the original index.html. Edit the text and markup here. */
-import { NolanMark } from './Logos'
+import { NolanMark, NolanWordmark } from './Logos'
 export function MeetNolan() {
   return (
     <>
@@ -16,7 +16,7 @@ export function MeetNolan() {
           </header>
 
           <div className="nolan__stage" data-reveal="">
-            <div className="nolan__avatar" aria-hidden="true"><NolanMark /></div>
+            <div className="nolan__avatar" aria-hidden="true"><NolanWordmark /></div>
 
             {/* Example conversation */}
             <div className="nolan-chat" id="nolan-chat" aria-label="Example conversation with Nolan">
