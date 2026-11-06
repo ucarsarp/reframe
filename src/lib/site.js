@@ -735,6 +735,7 @@ export function initSite() {
      shrinks while you click. Sizes live in styles.css (--cursor-size*). */
   if (finePointer) {
     const cursor = document.querySelector('.cursor');
+    const rec = document.querySelector('.cursor-rec'); // the REC light that trails it
     const css = getComputedStyle(document.documentElement);
     const px = (name, fallback) => parseFloat(css.getPropertyValue(name)) || fallback;
     const full = px('--cursor-size-hover', 96);
@@ -743,7 +744,8 @@ export function initSite() {
     const FOLLOW = 0.18;   // 0–1: higher = circle catches up with the pointer faster
     const STRETCH = 0.004; // how much speed stretches the circle
 
-    let x = -100, y = -100, cx = -100, cy = -100;
+    const REC_FOLLOW = 0.1; // the REC light lags a little more than the circle
+    let x = -100, y = -100, cx = -100, cy = -100, rx = -100, ry = -100;
     let scale = 0, targetScale = normalScale;
     let hovering = false, pressed = false;
 
@@ -753,12 +755,13 @@ export function initSite() {
 
     window.addEventListener('mousemove', (e) => {
       x = e.clientX; y = e.clientY;
-      if (!cursor.classList.contains('is-active')) { cx = x; cy = y; } // no fly-in from the corner
+      if (!cursor.classList.contains('is-active')) { cx = rx = x; cy = ry = y; } // no fly-in from the corner
       cursor.classList.add('is-active');
+      rec?.classList.add('is-active');
       hovering = !!e.target.closest('a, button, .showcase__scroller');
       updateTarget();
     });
-    document.addEventListener('mouseleave', () => cursor.classList.remove('is-active'));
+    document.addEventListener('mouseleave', () => { cursor.classList.remove('is-active'); rec?.classList.remove('is-active'); });
     window.addEventListener('mousedown', () => { pressed = true; updateTarget(); });
     window.addEventListener('mouseup', () => { pressed = false; updateTarget(); });
 
@@ -774,6 +777,14 @@ export function initSite() {
       cursor.style.transform =
         `translate3d(${cx}px, ${cy}px, 0) rotate(${angle}rad) ` +
         `scale(${scale * (1 + speed)}, ${scale * (1 - speed * 0.6)})`;
+
+      // REC light: sits just off the circle's lower right edge and trails behind it
+      if (rec) {
+        const edge = (full / 2) * scale * 0.72 + 8;
+        rx += (cx + edge - rx) * REC_FOLLOW;
+        ry += (cy + edge - ry) * REC_FOLLOW;
+        rec.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
+      }
       requestAnimationFrame(follow);
     })();
   }

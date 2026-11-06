@@ -45,7 +45,7 @@
   --hero-stage-h:  150px;         /* phones: space above the headline for the 3D objects */
   --intro-length:  170vh;         /* scroll length of the opening title card (it also auto-plays) */
   --gutter:        clamp(16px, 4vw, 48px);
-  --section-pad:   clamp(96px, 14vw, 200px);
+  --section-pad:   clamp(80px, 10vw, 150px);
   --nav-h:         72px;
   --bar-h:         40px;          /* launch countdown bar above the nav */
   --header-h:      calc(var(--nav-h) + var(--bar-h));
@@ -87,7 +87,7 @@ body {
   color: var(--text);
   font-family: var(--font-body);
   font-size: 17px;
-  line-height: 1.6;
+  line-height: 1.45;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -234,6 +234,14 @@ a { color: inherit; text-decoration: none; }
 
 .nav__menu { display: flex; align-items: center; justify-content: center; }
 .nav__links { display: flex; gap: 32px; font-size: 14px; }
+
+/* The header runs edge to edge: no 1100px cap on the countdown bar or the nav row */
+.nav .container { max-width: none; }
+@media (min-width: 861px) {
+  .nav__center { display: contents; }               /* logo and links become their own columns */
+  .nav__logo { grid-column: 1; justify-self: start; }
+  .nav__menu { grid-column: 2; }
+}
 
 /* Mobile menu toggle (hidden on desktop) */
 .nav__toggle {
@@ -482,7 +490,7 @@ a { color: inherit; text-decoration: none; }
   padding-bottom: clamp(64px, 8vw, 120px);
 }
 
-.hero__eyebrow { margin-bottom: clamp(24px, 3vw, 40px); }
+.hero__eyebrow { margin-bottom: clamp(16px, 2vw, 28px); }
 
 .hero__title {
   font-family: var(--font-display);
@@ -501,15 +509,15 @@ a { color: inherit; text-decoration: none; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 32px;
-  margin-top: clamp(40px, 5vw, 72px);
-  padding-top: 32px;
+  gap: 20px;
+  margin-top: clamp(28px, 3.5vw, 48px);
+  padding-top: 28px;
   border-top: 1px solid var(--line);
 }
 .hero__sub { max-width: 40ch; margin: 0 auto; font-size: clamp(17px, 1.5vw, 20px); color: var(--text-muted); }
 .hero__actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
 
-.hero__media { margin-top: clamp(56px, 7vw, 100px); }
+.hero__media { margin-top: clamp(40px, 5vw, 72px); }
 
 /* Hero content sits above the 3D canvas */
 .hero > .container { position: relative; z-index: 1; }
@@ -621,7 +629,7 @@ a { color: inherit; text-decoration: none; }
   font-size: 12px; padding: 5px 12px;
   border: 1px solid var(--line-strong); border-radius: 999px;
 }
-.frame__note { margin-top: 8px; font-size: 13px; line-height: 1.5; color: var(--text-muted); }
+.frame__note { margin-top: 8px; font-size: 13px; line-height: 1.4; color: var(--text-muted); }
 
 @media (max-width: 760px) {
   .frame--hero { aspect-ratio: 4 / 5; }
@@ -666,14 +674,14 @@ a { color: inherit; text-decoration: none; }
   display: grid;
   justify-items: center;
   text-align: center;
-  gap: 24px;
-  margin-bottom: clamp(64px, 9vw, 140px);
+  gap: 14px;
+  margin-bottom: clamp(44px, 6vw, 90px);
 }
 .section__title {
   font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(48px, 8vw, 128px);
-  line-height: 0.95;
+  line-height: 0.9;
   letter-spacing: -0.02em;
   max-width: 14ch;
   margin: 0 auto;
@@ -683,6 +691,7 @@ a { color: inherit; text-decoration: none; }
    3. Features — centered cards: 4 in a row on desktop, 2×2 on tablet, 1 column on phones
    -------------------------------------------------------------------------- */
 .features .container {
+  max-width: 1520px;                 /* wider than --container so the cards get room */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -701,8 +710,8 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   justify-content: flex-start;
   text-align: center;
-  gap: 28px;
-  padding: 16px 16px 36px;
+  gap: 22px;
+  padding: 16px 16px 32px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--bg);
@@ -734,7 +743,7 @@ a { color: inherit; text-decoration: none; }
   display: grid; place-items: center;
   border: 1px solid var(--line-strong);
   border-radius: 50%;
-  margin: 0 auto 24px;
+  margin: 0 auto 16px;
   transition: background-color 0.4s var(--ease), color 0.4s var(--ease);
 }
 .feature__icon svg { width: 24px; height: 24px; }
@@ -745,11 +754,11 @@ a { color: inherit; text-decoration: none; }
   font-style: italic;
   font-weight: 400;
   font-size: clamp(28px, 2.6vw, 36px);
-  line-height: 1.05;
+  line-height: 1;
   letter-spacing: -0.01em;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
-.feature__desc { color: var(--text-muted); max-width: 36ch; margin: 0 auto; font-size: 16px; }
+.feature__desc { color: var(--text-muted); max-width: 40ch; margin: 0 auto; font-size: 16px; }
 
 /* Stagger the cards as they reveal */
 .feature:nth-child(2) { transition-delay: 0.1s; }
@@ -1187,7 +1196,7 @@ a { color: inherit; text-decoration: none; }
    7. Call to action
    -------------------------------------------------------------------------- */
 .cta { text-align: center; }
-.cta__inner { display: grid; justify-items: center; gap: 32px; }
+.cta__inner { display: grid; justify-items: center; gap: 20px; }
 .cta__title {
   font-family: var(--font-display);
   font-weight: 400;
@@ -1196,7 +1205,7 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: -0.025em;
 }
 .cta__sub { color: var(--text-muted); max-width: 40ch; }
-.cta__actions { margin-top: 16px; }
+.cta__actions { margin-top: 8px; }
 
 /* --------------------------------------------------------------------------
    8. Footer
@@ -1230,6 +1239,20 @@ a { color: inherit; text-decoration: none; }
   will-change: transform;
 }
 .cursor.is-active { opacity: 1; }
+
+/* REC light that travels with the cursor (script.js moves it, trailing the circle) */
+.cursor-rec {
+  position: fixed; top: 0; left: 0; z-index: 301;
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em;
+  color: var(--text-muted);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  will-change: transform;
+}
+.cursor-rec i { width: 6px; height: 6px; }
+.cursor-rec.is-active { opacity: 1; }
 
 /* --------------------------------------------------------------------------
    Meet Nolan — the AI film tutor (named after Christopher Nolan)
@@ -1312,7 +1335,7 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.03);
   border-radius: 4px 18px 18px 18px;
-  font-size: 15px; line-height: 1.5;
+  font-size: 15px; line-height: 1.4;
 }
 .nolan-chat__name { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
 .nolan-chat__typing { display: none; gap: 5px; padding: 6px 0; }
@@ -1584,10 +1607,11 @@ body::after {
   font-variant-numeric: tabular-nums;
 }
 .hud__rec { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
-.hud__rec i {
-  width: 7px; height: 7px; border-radius: 50%;
+.hud__rec i,
+.cursor-rec i {
+  width: 8px; height: 8px; border-radius: 50%;
   background: var(--accent-red);
-  box-shadow: 0 0 10px var(--accent-red);
+  box-shadow: 0 0 0 2px rgba(194, 58, 43, 0.25), 0 0 12px var(--accent-red);
 }
 .hud__scene { color: var(--text-dim); }
 
@@ -1727,8 +1751,8 @@ body::after {
   }
 
   /* REC dot blinks */
-  .hud__rec i { animation: rec 1.6s steps(1) infinite; }
-  @keyframes rec { 50% { opacity: 0.15; } }
+  .hud__rec i, .cursor-rec i { animation: rec 1.2s ease-in-out infinite; }
+  @keyframes rec { 0%, 55% { opacity: 1; } 70%, 92% { opacity: 0.12; } 100% { opacity: 1; } }
 }
 
 /* Mission statement: words go from dim to bright as you scroll (script.js) */
@@ -1741,5 +1765,5 @@ body::after {
   .ticker__track { animation: none; }
   .scrub-word { opacity: 1; }
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
-  .cursor { display: none; }
+  .cursor, .cursor-rec { display: none; }
 }

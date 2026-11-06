@@ -6,6 +6,8 @@ export function Overlays() {
 
     {/* Inverting cursor (only enabled on mouse devices without reduced motion) */}
     <div className="cursor" aria-hidden="true"></div>
+    {/* Camera REC light that trails the cursor around the page */}
+    <div className="cursor-rec" aria-hidden="true"><i></i>REC</div>
 
     {/* Film grain + vignette over the whole page (decorative) */}
     <div className="grain" aria-hidden="true"></div>
