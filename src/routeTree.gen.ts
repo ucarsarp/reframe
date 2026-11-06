@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiNolanRouteImport } from './routes/api/nolan'
+import { Route as ApiAppNolanRouteImport } from './routes/api/app/nolan'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,40 @@ const ApiNolanRoute = ApiNolanRouteImport.update({
   path: '/api/nolan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAppNolanRoute = ApiAppNolanRouteImport.update({
+  id: '/api/app/nolan',
+  path: '/api/app/nolan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/nolan': typeof ApiNolanRoute
+  '/api/app/nolan': typeof ApiAppNolanRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/nolan': typeof ApiNolanRoute
+  '/api/app/nolan': typeof ApiAppNolanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/nolan': typeof ApiNolanRoute
+  '/api/app/nolan': typeof ApiAppNolanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/nolan'
+  fullPaths: '/' | '/api/nolan' | '/api/app/nolan'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/nolan'
-  id: '__root__' | '/' | '/api/nolan'
+  to: '/' | '/api/nolan' | '/api/app/nolan'
+  id: '__root__' | '/' | '/api/nolan' | '/api/app/nolan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiNolanRoute: typeof ApiNolanRoute
+  ApiAppNolanRoute: typeof ApiAppNolanRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNolanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/app/nolan': {
+      id: '/api/app/nolan'
+      path: '/api/app/nolan'
+      fullPath: '/api/app/nolan'
+      preLoaderRoute: typeof ApiAppNolanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiNolanRoute: ApiNolanRoute,
+  ApiAppNolanRoute: ApiAppNolanRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

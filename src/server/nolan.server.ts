@@ -31,12 +31,12 @@ let demoMessages: Anthropic.Beta.BetaMessageParam[] | null = null
 
 // The still is fetched from the site itself, because on hosts like Vercel the server
 // functions can't read the public/ folder from disk. Locally, reading the file also works.
-async function loadStill(origin: string): Promise<string> {
+export async function loadStill(origin: string, name = 'get-out'): Promise<string> {
   try {
-    const res = await fetch(new URL('/images/get-out.jpg', origin))
+    const res = await fetch(new URL(`/images/${name}.jpg`, origin))
     if (res.ok) return Buffer.from(await res.arrayBuffer()).toString('base64')
   } catch { /* fall back to the file on disk */ }
-  return (await readFile(path.join(process.cwd(), 'public', 'images', 'get-out.jpg'))).toString('base64')
+  return (await readFile(path.join(process.cwd(), 'public', 'images', `${name}.jpg`))).toString('base64')
 }
 
 async function demo(origin: string): Promise<Anthropic.Beta.BetaMessageParam[]> {
@@ -68,7 +68,7 @@ const RATE_LIMIT = 15;             // questions per visitor...
 const RATE_WINDOW = 10 * 60 * 1000; // ...per 10 minutes
 const DAILY_LIMIT = 60;            // and per visitor per day
 const DAY = 24 * 60 * 60 * 1000
-const MAX_BODY = 8 * 1024 * 1024;  // bytes per request (same as the old express.json limit)
+export const MAX_BODY = 8 * 1024 * 1024;  // bytes per request (same as the old express.json limit)
 const hits = new Map<string, number[]>()
 
 function rateLimited(ip: string) {
@@ -84,7 +84,7 @@ type Turn = { role?: unknown; text?: unknown; image?: { media_type?: unknown; da
 type ImageType = 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif'
 
 // Turn the browser's simple history into Claude messages, rejecting anything odd
-function toClaudeMessages(history: unknown): Anthropic.Beta.BetaMessageParam[] | null {
+export function toClaudeMessages(history: unknown): Anthropic.Beta.BetaMessageParam[] | null {
   if (!Array.isArray(history) || history.length === 0) return null
   const turns = history.slice(-MAX_TURNS) as Turn[]
   if (turns[0]?.role !== 'user') turns.shift()
@@ -121,7 +121,7 @@ function errorResponse(err: unknown) {
    3. Neither: Nolan's built-in answers (nolan-offline.server.ts). */
 const GATEWAY_MODEL = 'anthropic/claude-sonnet-5.5'
 
-function connect(request: Request) {
+export function connect(request: Request) {
   if (process.env.ANTHROPIC_API_KEY) return { client: new Anthropic(), model: MODEL, gateway: false }
   const token = process.env.AI_GATEWAY_API_KEY || request.headers.get('x-vercel-oidc-token') || process.env.VERCEL_OIDC_TOKEN
   if (!token) return null
@@ -153,12 +153,29 @@ export async function handleNolan(request: Request): Promise<Response> {
   const ai = connect(request)
   if (!ai) return scripted()
 
+  const reply = await startReply(ai, [...(await demo(new URL(request.url).origin)), ...messages], request.signal)
+  if (!reply.ok) {
+    if (reply.status === 429) return errorResponse(reply.error)
+    console.error('Nolan AI unavailable, using built-in answers:', reply.error instanceof Error ? reply.error.message : reply.error)
+    return scripted()
+  }
+  return new Response(reply.body, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Nolan-Source': ai.gateway ? 'ai-gateway' : 'anthropic' } })
+}
+
+/* ---------- Asking Claude and streaming the reply ----------
+   Shared by the website (above) and the app (nolan-app.server.ts). Resolves once the first
+   event arrives, so API errors (bad key, rate limit) can still get a proper status code.
+   onFinish runs before the stream closes, with the full reply and whether it finished cleanly. */
+type AI = NonNullable<ReturnType<typeof connect>>
+type Reply = { ok: true; body: ReadableStream<Uint8Array> } | { ok: false; status?: number; error: unknown }
+
+export async function startReply(ai: AI, messages: Anthropic.Beta.BetaMessageParam[], signal: AbortSignal, onFinish?: (text: string, complete: boolean) => Promise<void>): Promise<Reply> {
   const params = {
     model: ai.model,
     max_tokens: 1500, // caps the cost of one answer (thinking + reply)
     output_config: { effort: 'low' as const }, // quick, chatty answers
     system: NOLAN,
-    messages: [...(await demo(new URL(request.url).origin)), ...messages],
+    messages,
   }
   const stream = ai.gateway
     ? ai.client.beta.messages.stream(params)
@@ -170,21 +187,20 @@ export async function handleNolan(request: Request): Promise<Response> {
       })
 
   // Stop paying for tokens if the visitor closes the page mid-answer
-  request.signal.addEventListener('abort', () => stream.abort())
+  signal.addEventListener('abort', () => stream.abort())
 
-  // Wait for the first event so API errors (bad key, rate limit) still get a proper status code
   const events = stream[Symbol.asyncIterator]()
   let first: IteratorResult<Anthropic.Beta.BetaRawMessageStreamEvent>
-  try { first = await events.next() } catch (err) {
-    if (err instanceof Anthropic.APIError && err.status === 429) return errorResponse(err)
-    console.error('Nolan AI unavailable, using built-in answers:', err instanceof Error ? err.message : err)
-    return scripted()
+  try { first = await events.next() } catch (error) {
+    return { ok: false, status: error instanceof Anthropic.APIError ? error.status : undefined, error }
   }
 
   const encoder = new TextEncoder()
-  const reply = new ReadableStream<Uint8Array>({
+  const body = new ReadableStream<Uint8Array>({
     async start(controller) {
-      const write = (text: string) => controller.enqueue(encoder.encode(text))
+      let text = ''
+      let complete = false
+      const write = (t: string) => { text += t; controller.enqueue(encoder.encode(t)) }
       try {
         for (let step = first; !step.done; step = await events.next()) {
           const event = step.value
@@ -192,17 +208,18 @@ export async function handleNolan(request: Request): Promise<Response> {
         }
         const final = await stream.finalMessage()
         if (final.stop_reason === 'refusal') write("\n\nI can't help with that one. Ask me about a shot, a scene or a film instead.")
+        complete = true
       } catch (err) {
-        if (!request.signal.aborted) {
+        if (!signal.aborted) {
           console.error('Nolan error:', err instanceof Error ? err.message : err)
           write(SORRY)
         }
       } finally {
-        controller.close()
+        await onFinish?.(text, complete).catch((err) => console.error('Nolan save error:', err))
+        try { controller.close() } catch { /* the visitor already left */ }
       }
     },
     cancel() { stream.abort() },
   })
-
-  return new Response(reply, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Nolan-Source': ai.gateway ? 'ai-gateway' : 'anthropic' } })
+  return { ok: true, body }
 }
