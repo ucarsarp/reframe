@@ -7,21 +7,11 @@
    ========================================================================== */
 import '@tanstack/react-start/server-only'
 import type Anthropic from '@anthropic-ai/sdk'
-import { MAX_BODY, connect, loadStill, startReply, toClaudeMessages } from './nolan.server'
+import { MAX_BODY, connect, startReply, toClaudeMessages } from './nolan.server'
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://hyrgcuvnuciwefrzhcjj.supabase.co'
 
-// The films in the app's library, so Nolan knows which still he is looking at
-const FILMS: Record<string, string> = {
-  'in-the-mood-for-love': 'In the Mood for Love (2000, Wong Kar-wai)',
-  'get-out': 'Get Out (2017, Jordan Peele)',
-  'social-network': 'The Social Network (2010, David Fincher)',
-  'phantom-thread': 'Phantom Thread (2017, Paul Thomas Anderson)',
-  oppenheimer: 'Oppenheimer (2023, Christopher Nolan)',
-  babylon: 'Babylon (2022, Damien Chazelle)',
-  'do-the-right-thing': 'Do the Right Thing (1989, Spike Lee)',
-}
-
+const SLUG = /^[a-z0-9-]{1,80}$/
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // The app's web preview runs on another origin. Sign-in travels in the Authorization header, not cookies.
@@ -73,6 +63,54 @@ async function ownsSession(secret: string, user: string, session: string) {
   return res.ok && ((await res.json()) as unknown[]).length === 1
 }
 
+/* ---------- What Nolan knows about a film or scene from the library ----------
+   The app shows ReFrame's own diagrams rather than copyrighted frames, so Nolan gets the scene
+   as text. Public-domain films (still_url set) also send him the still. */
+type Light = { label: string }
+type SceneRow = { title: string; moment: string; shot: string; angle: string; lens: string; light: string; movement: string; intent: string; setup: { camera: { label: string }; lights: Light[]; subjects: Light[] } }
+type FilmRow = { title: string; year: number; director: string; logline: string; still_url: string | null; scenes?: { title: string }[] }
+
+async function libraryContext(secret: string, film: string | null, scene: string | null): Promise<{ text: string; still: string | null } | null> {
+  if (scene) {
+    const res = await db(secret, `scenes?select=*,films(*)&id=eq.${scene}`)
+    const row = res.ok ? ((await res.json()) as (SceneRow & { films: FilmRow })[])[0] : undefined
+    if (!row) return null
+    const f = row.films
+    const setup = row.setup
+    return {
+      still: f.still_url,
+      text: [
+        `The student is studying a scene from ${f.title} (${f.year}, ${f.director}) in the ReFrame library. Unless a still is attached, ReFrame shows them a diagram of the likely setup rather than the frame itself, so explain from what you know of the film.`,
+        `Scene: ${row.title}. ${row.moment}`,
+        `ReFrame's breakdown: ${row.shot}; ${row.angle}; ${row.lens}; ${row.light}; ${row.movement}.`,
+        `The diagram shows: camera ${setup.camera.label}; ${setup.subjects.map((x) => x.label).join(', ')}; lights: ${setup.lights.map((l) => l.label).join(', ') || 'none'}.`,
+        `ReFrame's reading of the intent: ${row.intent}`,
+      ].join('\n'),
+    }
+  }
+  if (film) {
+    const res = await db(secret, `films?select=*,scenes(title)&id=eq.${film}`)
+    const f = res.ok ? ((await res.json()) as FilmRow[])[0] : undefined
+    if (!f) return null
+    return {
+      still: f.still_url,
+      text: `The student is asking about ${f.title} (${f.year}, ${f.director}): ${f.logline} Scenes they can explore in the ReFrame library: ${(f.scenes ?? []).map((x) => x.title).join(', ') || 'none yet'}.`,
+    }
+  }
+  return null
+}
+
+async function stillAsImage(url: string): Promise<Anthropic.Beta.BetaContentBlockParam | null> {
+  try {
+    const res = await fetch(url)
+    const type = res.headers.get('content-type')?.split(';')[0]
+    if (!res.ok || (type !== 'image/jpeg' && type !== 'image/png' && type !== 'image/webp')) return null
+    return { type: 'image', source: { type: 'base64', media_type: type, data: Buffer.from(await res.arrayBuffer()).toString('base64') } }
+  } catch {
+    return null
+  }
+}
+
 async function saveTurn(secret: string, user: string, session: string, question: string, answer: string) {
   const rows = [
     { session_id: session, user_id: user, role: 'user', text: question },
@@ -84,7 +122,7 @@ async function saveTurn(secret: string, user: string, session: string, question:
 }
 
 /* ---------- POST /api/app/nolan ----------
-   Body: { sessionId, film?, messages: [{ role, text, image? }] }
+   Body: { sessionId, film?, scene?, messages: [{ role, text, image? }] }
    402 when the user has no credits left, 401 when they need to sign in again.
    Streams the reply as plain text; X-Credits-Left says what's left after this question. */
 export async function handleAppNolan(request: Request): Promise<Response> {
@@ -95,25 +133,24 @@ export async function handleAppNolan(request: Request): Promise<Response> {
   const user = await userFrom(request, secret)
   if (!user) return text('Sign in to ask Nolan.', 401)
 
-  let body: { sessionId?: unknown; film?: unknown; messages?: unknown } | null = null
+  let body: { sessionId?: unknown; film?: unknown; scene?: unknown; messages?: unknown } | null = null
   try { body = await request.json() } catch { /* handled below */ }
   const messages = toClaudeMessages(body?.messages)
   const session = typeof body?.sessionId === 'string' && UUID.test(body.sessionId) ? body.sessionId : null
-  const film = typeof body?.film === 'string' && body.film in FILMS ? body.film : null
+  const film = typeof body?.film === 'string' && SLUG.test(body.film) ? body.film : null
+  const scene = typeof body?.scene === 'string' && SLUG.test(body.scene) ? body.scene : null
   if (!messages || !session) return text('Bad request.', 400)
   if (!(await ownsSession(secret, user, session))) return text('Bad request.', 400)
 
   const ai = connect(request)
   if (!ai) return text('Nolan is resting right now. Try again later. Your credit was not used.', 503)
 
-  // A film from the library: show Nolan the still with the first question
-  if (film) {
-    const still = await loadStill(new URL(request.url).origin, film)
+  // A film or scene from the library: tell Nolan about it with the first question
+  const context = await libraryContext(secret, film, scene)
+  if (context) {
     const first = messages[0].content as Anthropic.Beta.BetaContentBlockParam[]
-    first.unshift(
-      { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: still } },
-      { type: 'text', text: `This is a still from ${FILMS[film]}.` },
-    )
+    const image = context.still ? await stillAsImage(context.still) : null
+    first.unshift(...(image ? [image] : []), { type: 'text', text: context.text })
   }
 
   const spend = await spendCredit(secret, user, session)
