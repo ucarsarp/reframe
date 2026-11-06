@@ -1,14 +1,64 @@
-/* SiteFooter: converted from the original index.html. Edit the text and markup here. */
-import { ReFrameMark } from './Logos'
+/* SiteFooter: the end credits. Edit the text and markup here.
+   Layout, top to bottom: credit columns · closing line + popcorn · giant wordmark · bottom bar.
+   The faint grid and projector beam behind it all are drawn in styles.css (.footer). */
+
+// The films whose stills appear on the page (credited in column d)
+const FILMS = [
+  ['In the Mood for Love', 'Wong Kar-wai'],
+  ['Get Out', 'Jordan Peele'],
+  ['The Social Network', 'David Fincher'],
+  ['Phantom Thread', 'Paul Thomas Anderson'],
+  ['Oppenheimer', 'Christopher Nolan'],
+  ['Babylon', 'Damien Chazelle'],
+  ['Do the Right Thing', 'Spike Lee'],
+]
+
 export function SiteFooter() {
   return (
     <>
   {/* =========================================================
-         8. FOOTER
+         8. FOOTER · the end credits
          ========================================================= */}
-    <footer className="footer">
+    <footer className="footer" id="credits">
+      {/* Credit columns, labelled like a film's end titles */}
+      <div className="footer__wide footer__cols" data-reveal="">
+        <nav className="footer__col" aria-label="Footer">
+          <p className="footer__head">(a.) Explore</p>
+          <ul>
+            <li><a className="link" href="#features">Features</a></li>
+            <li><a className="link" href="#nolan">Nolan <span className="nav__ai">AI</span></a></li>
+            <li><a className="link" href="#how">How it works</a></li>
+            <li><a className="link" href="#mission">Mission</a></li>
+            <li><a className="link" href="#showcase">Showcase</a></li>
+          </ul>
+        </nav>
+        <div className="footer__col">
+          <p className="footer__head">(b.) Premiere</p>
+          <p>18.11.26 · 12:30</p>
+          <p>iOS &amp; Android</p>
+          <p><a className="link" href="#download">Download →</a></p>
+        </div>
+        <div className="footer__col">
+          <p className="footer__head">(c.) Contact</p>
+          <ul>
+            <li><a className="link" href="#">Contact</a></li>
+            <li><a className="link" href="#">Privacy</a></li>
+            <li><a className="link" href="https://github.com/ucarsarp/reframe">GitHub</a></li>
+          </ul>
+        </div>
+        <div className="footer__col footer__col--credits">
+          <p className="footer__head">(d.) Credits</p>
+          <ul>
+            {FILMS.map(([film, director]) => (
+              <li key={film}><em>{film}</em> · {director}</li>
+            ))}
+          </ul>
+          <p className="footer__fine">Stills used for teaching. Nolan is named in homage to Christopher Nolan and isn't affiliated with him.</p>
+        </div>
+      </div>
+
+      {/* Closing credit */}
       <div className="container footer__inner">
-        {/* Closing credit */}
         <p className="footer__credit" data-reveal=""><span className="eyebrow">A film education by ReFrame</span><br />Directed by <em>you.</em></p>
       </div>
 
@@ -51,16 +101,17 @@ export function SiteFooter() {
         <p className="popcorn__hint">Click the bucket for more</p>
       </div>
 
-      <div className="container footer__inner footer__inner--bottom">
-        <a href="#top" className="nav__logo footer__logo"><ReFrameMark className="nav__mark" />Re<span>Frame</span></a>
-        <ul className="footer__links">
-          <li><a className="link" href="#features">Features</a></li>
-          <li><a className="link" href="#nolan">Nolan</a></li>
-          <li><a className="link" href="#mission">Mission</a></li>
-          <li><a className="link" href="#">Privacy</a></li>
-          <li><a className="link" href="#">Contact</a></li>
-        </ul>
-        <p className="footer__copy">&copy; <span id="year">2026</span> ReFrame. All rights reserved.</p>
+      {/* Giant wordmark between letterbox lines, the way the film ends on its title */}
+      <div className="footer__wide footer__title" data-reveal="">
+        <p className="footer__ratio"><span>2.39 : 1</span><span><i aria-hidden="true"></i>REC</span></p>
+        <a href="#top" className="footer__word" aria-label="ReFrame, back to top">Re<em>Frame</em></a>
+      </div>
+
+      {/* Bottom bar */}
+      <div className="footer__wide footer__bar">
+        <p>&copy; <span id="year">2026</span> ReFrame. All rights reserved.</p>
+        <p className="footer__scene">Scene 07 / The end</p>
+        <a className="link" href="#top">Back to top ↑</a>
       </div>
     </footer>
 

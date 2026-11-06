@@ -4,8 +4,9 @@ export function Overlays() {
     <>
   <a className="skip-link" href="#main">Skip to content</a>
 
-    {/* Inverting cursor (only enabled on mouse devices without reduced motion) */}
-    <div className="cursor" aria-hidden="true"></div>
+    {/* Viewfinder cursor: four focus brackets that lock onto links and buttons
+         (only enabled on mouse devices without reduced motion) */}
+    <div className="cursor" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></div>
     {/* Camera REC light that trails the cursor around the page */}
     <div className="cursor-rec" aria-hidden="true"><i></i>REC</div>
 

@@ -3,7 +3,7 @@
    Countdown, intro title card, nav state, hero intro, showcase scroller,
    split-word headings, scroll reveals,
    mission word scrub, scroll HUD (timecode), parallax, scroll band,
-   velocity skew, the inverting cursor and the live Nolan chat.
+   velocity skew, the viewfinder cursor and the live Nolan chat.
    All motion is skipped when the user prefers reduced motion.
    ========================================================================== */
 export function initSite() {
@@ -160,6 +160,7 @@ export function initSite() {
     ['mission', 'Scene 04 / Mission'],
     ['showcase', 'Scene 05 / Showcase'],
     ['download', 'Scene 06 / Finale'],
+    ['credits', 'Scene 07 / The end'],
   ].map(([id, label]) => [document.getElementById(id), label]).filter(([el]) => el);
 
   function updateHud() {
@@ -729,60 +730,61 @@ export function initSite() {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
 
-  /* ---------- 6. Inverting cursor (mouse devices only) ----------
-     A circle trails the pointer and inverts the colors beneath it.
-     It stretches in the direction you move, grows over links/buttons and
-     shrinks while you click. Sizes live in styles.css (--cursor-size*). */
+  /* ---------- 6. Viewfinder cursor (mouse devices only) ----------
+     Four focus brackets trail the pointer and invert the colors beneath them.
+     Over a link or button they glide out and lock around it, like a camera's
+     autofocus; they tighten while you click. A REC light trails behind.
+     Sizes live in styles.css (--cursor-size, --cursor-pad, --cursor-corner). */
   if (finePointer) {
     const cursor = document.querySelector('.cursor');
     const rec = document.querySelector('.cursor-rec'); // the REC light that trails it
     const css = getComputedStyle(document.documentElement);
     const px = (name, fallback) => parseFloat(css.getPropertyValue(name)) || fallback;
-    const full = px('--cursor-size-hover', 96);
-    const normalScale = px('--cursor-size', 40) / full;
+    const SIZE = px('--cursor-size', 30);
+    const PAD = px('--cursor-pad', 8);
+    const LOCKABLE = 'a, button, [role="button"], input, label.nolan-chat__attach';
+    const MAX_LOCK = 420;   // targets wider than this (big cards) aren't framed
 
-    const FOLLOW = 0.18;   // 0–1: higher = circle catches up with the pointer faster
-    const STRETCH = 0.004; // how much speed stretches the circle
+    const FOLLOW = 0.22;    // 0–1: higher = brackets catch up with the pointer faster
+    const REC_FOLLOW = 0.1; // the REC light lags a little more
 
-    const REC_FOLLOW = 0.1; // the REC light lags a little more than the circle
-    let x = -100, y = -100, cx = -100, cy = -100, rx = -100, ry = -100;
-    let scale = 0, targetScale = normalScale;
-    let hovering = false, pressed = false;
-
-    function updateTarget() {
-      targetScale = (hovering ? 1 : normalScale) * (pressed ? 0.75 : 1);
-    }
+    let x = -100, y = -100, cx = -100, cy = -100, w = SIZE, h = SIZE, rx = -100, ry = -100;
+    let target = null, pressed = false;
 
     window.addEventListener('mousemove', (e) => {
       x = e.clientX; y = e.clientY;
       if (!cursor.classList.contains('is-active')) { cx = rx = x; cy = ry = y; } // no fly-in from the corner
       cursor.classList.add('is-active');
       rec?.classList.add('is-active');
-      hovering = !!e.target.closest('a, button, .showcase__scroller');
-      updateTarget();
+      const t = e.target.closest(LOCKABLE);
+      target = t && t.getBoundingClientRect().width <= MAX_LOCK ? t : null;
+      cursor.classList.toggle('is-locked', !!target);
     });
     document.addEventListener('mouseleave', () => { cursor.classList.remove('is-active'); rec?.classList.remove('is-active'); });
-    window.addEventListener('mousedown', () => { pressed = true; updateTarget(); });
-    window.addEventListener('mouseup', () => { pressed = false; updateTarget(); });
+    window.addEventListener('mousedown', () => { pressed = true; });
+    window.addEventListener('mouseup', () => { pressed = false; });
 
     (function follow() {
-      const dx = x - cx, dy = y - cy;
-      cx += dx * FOLLOW;
-      cy += dy * FOLLOW;
-      scale += (targetScale - scale) * 0.15;
+      // Where the brackets want to be: framing the target, or a small box on the pointer
+      let tx = x, ty = y, tw = SIZE, th = SIZE;
+      if (target && target.isConnected) {
+        const r = target.getBoundingClientRect();
+        tx = r.left + r.width / 2; ty = r.top + r.height / 2;
+        tw = r.width + PAD * 2; th = r.height + PAD * 2;
+      }
+      const squeeze = pressed ? 0.82 : 1;
+      cx += (tx - cx) * FOLLOW;
+      cy += (ty - cy) * FOLLOW;
+      w += (tw * squeeze - w) * FOLLOW;
+      h += (th * squeeze - h) * FOLLOW;
+      cursor.style.width = `${w}px`;
+      cursor.style.height = `${h}px`;
+      cursor.style.transform = `translate3d(${cx - w / 2}px, ${cy - h / 2}px, 0)`;
 
-      // Squash and stretch along the direction of travel
-      const speed = Math.min(Math.hypot(dx, dy) * STRETCH, 0.35);
-      const angle = Math.atan2(dy, dx);
-      cursor.style.transform =
-        `translate3d(${cx}px, ${cy}px, 0) rotate(${angle}rad) ` +
-        `scale(${scale * (1 + speed)}, ${scale * (1 - speed * 0.6)})`;
-
-      // REC light: sits just off the circle's lower right edge and trails behind it
+      // REC light: just off the brackets' lower right corner, trailing behind
       if (rec) {
-        const edge = (full / 2) * scale * 0.72 + 8;
-        rx += (cx + edge - rx) * REC_FOLLOW;
-        ry += (cy + edge - ry) * REC_FOLLOW;
+        rx += (cx + w / 2 + 6 - rx) * REC_FOLLOW;
+        ry += (cy + h / 2 + 4 - ry) * REC_FOLLOW;
         rec.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
       }
       requestAnimationFrame(follow);

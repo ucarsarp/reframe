@@ -51,11 +51,12 @@
   --header-h:      calc(var(--nav-h) + var(--bar-h));
   --radius:        4px;
 
-  /* Cursor: an inverting circle that follows the mouse.
-     Keep the color pure white so black turns white and white turns black. */
+  /* Cursor: camera viewfinder brackets that follow the mouse and lock onto links.
+     Keep the color pure white so it inverts whatever is beneath it. */
   --cursor-color:      #ffffff;
-  --cursor-size:       40px;    /* normal diameter */
-  --cursor-size-hover: 96px;    /* diameter over links and buttons */
+  --cursor-size:       30px;    /* bracket box when roaming */
+  --cursor-pad:        8px;     /* space around a link or button when locked on */
+  --cursor-corner:     8px;     /* length of each bracket arm */
 
   /* Launch countdown bar */
   --bar-bg:        #121212;
@@ -1210,13 +1211,96 @@ a { color: inherit; text-decoration: none; }
 /* --------------------------------------------------------------------------
    8. Footer
    -------------------------------------------------------------------------- */
-.footer { border-top: 1px solid var(--line); padding: 48px 0; }
+/* The end credits: a faint projection grid and a soft projector beam from the top */
+.footer {
+  position: relative;
+  border-top: 1px solid var(--line);
+  padding: clamp(56px, 7vw, 96px) 0 0;
+  background:
+    radial-gradient(ellipse 55% 60% at 50% 0%, rgba(255, 204, 136, 0.07), transparent 70%),
+    repeating-linear-gradient(90deg, transparent 0 calc(100% / 12 - 1px), rgba(245, 245, 243, 0.035) calc(100% / 12 - 1px) calc(100% / 12));
+  overflow: hidden;
+}
+.footer__wide { padding: 0 var(--gutter); }   /* edge to edge, like the header */
 .footer__inner {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 24px; text-align: center;
 }
-.footer__links { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; font-size: 14px; }
-.footer__copy { font-size: 13px; color: var(--text-dim); }
+
+/* (a.)–(d.) credit columns */
+.footer__cols {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(24px, 3vw, 48px);
+  padding-bottom: clamp(48px, 6vw, 80px);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: clamp(48px, 6vw, 88px);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.footer__col { display: flex; flex-direction: column; gap: 4px; }
+.footer__col ul { display: flex; flex-direction: column; gap: 4px; }
+.footer__head {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.footer__col--credits li { font-size: 13px; }
+.footer__col--credits em { color: var(--text); }
+.footer__fine { margin-top: 10px; font-size: 11px; line-height: 1.45; color: var(--text-dim); max-width: 36ch; }
+
+/* Giant wordmark between letterbox lines */
+.footer__title { text-align: center; }
+.footer__ratio {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em;
+  color: var(--text-dim);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-strong);
+}
+.footer__ratio span { display: inline-flex; align-items: center; gap: 6px; }
+.footer__ratio i {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent-red);
+  box-shadow: 0 0 0 2px rgba(194, 58, 43, 0.25), 0 0 12px var(--accent-red);
+}
+.footer__word {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(88px, 29vw, 560px);   /* fills the screen width */
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  padding: 0.04em 0 0.02em;
+  border-bottom: 1px solid var(--line-strong);
+  transition: color 0.4s var(--ease);
+}
+.footer__word em { color: var(--text-muted); transition: color 0.4s var(--ease); }
+.footer__word:hover em { color: var(--accent-red); }
+
+/* Bottom bar */
+.footer__bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding-top: 20px; padding-bottom: 64px;   /* clears the REC timecode in the corner */
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.footer__scene { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+.footer__bar > :last-child { justify-self: end; }
+
+@media (max-width: 860px) {
+  .footer__cols { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 40px; }
+}
+@media (max-width: 560px) {
+  .footer__bar { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 8px; }
+  .footer__bar > :last-child { justify-self: center; }
+}
+@media (max-width: 420px) {
+  .footer__cols { grid-template-columns: minmax(0, 1fr); }
+}
 
 
 /* --------------------------------------------------------------------------
@@ -1227,20 +1311,38 @@ a { color: inherit; text-decoration: none; }
    -------------------------------------------------------------------------- */
 .cursor {
   position: fixed; top: 0; left: 0; z-index: 300;
-  width: var(--cursor-size-hover);
-  height: var(--cursor-size-hover);
-  margin: calc(var(--cursor-size-hover) / -2) 0 0 calc(var(--cursor-size-hover) / -2);
-  border-radius: 50%;
-  background: var(--cursor-color);
+  width: var(--cursor-size);
+  height: var(--cursor-size);
   mix-blend-mode: difference;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s;
-  will-change: transform;
+  will-change: transform, width, height;
 }
 .cursor.is-active { opacity: 1; }
+/* the four bracket corners */
+.cursor i {
+  position: absolute;
+  width: var(--cursor-corner); height: var(--cursor-corner);
+  border: 0 solid var(--cursor-color);
+  transition: width 0.3s var(--ease), height 0.3s var(--ease);
+}
+.cursor i:nth-child(1) { top: 0; left: 0; border-top-width: 1.5px; border-left-width: 1.5px; }
+.cursor i:nth-child(2) { top: 0; right: 0; border-top-width: 1.5px; border-right-width: 1.5px; }
+.cursor i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+.cursor i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+.cursor.is-locked i { width: calc(var(--cursor-corner) * 1.5); height: calc(var(--cursor-corner) * 1.5); }
+/* centre point, hidden while locked on a target */
+.cursor b {
+  position: absolute; left: 50%; top: 50%;
+  width: 3px; height: 3px; margin: -1.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: var(--cursor-color);
+  transition: opacity 0.2s;
+}
+.cursor.is-locked b { opacity: 0; }
 
-/* REC light that travels with the cursor (script.js moves it, trailing the circle) */
+/* REC light that travels with the cursor (script.js moves it, trailing the brackets) */
 .cursor-rec {
   position: fixed; top: 0; left: 0; z-index: 301;
   display: flex; align-items: center; gap: 5px;
@@ -1454,7 +1556,6 @@ a { color: inherit; text-decoration: none; }
 /* --------------------------------------------------------------------------
    Footer closing credit
    -------------------------------------------------------------------------- */
-.footer { padding-top: clamp(72px, 10vw, 140px); }
 .footer__credit {
   font-family: var(--font-display);
   font-size: clamp(44px, 7vw, 104px);
@@ -1462,7 +1563,6 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: clamp(32px, 5vw, 64px);
 }
 .footer__credit .eyebrow { display: inline-block; margin-bottom: 16px; font-size: 11px; }
-.footer__inner--bottom { padding-top: 0; }
 
 /* --------------------------------------------------------------------------
    "Now showing" film strip (top of the Download section)
@@ -1530,9 +1630,8 @@ a { color: inherit; text-decoration: none; }
 .popcorn {
   position: relative;
   height: clamp(380px, 40vw, 480px);
-  margin: clamp(16px, 3vw, 40px) 0 clamp(48px, 6vw, 80px);
+  margin: clamp(16px, 3vw, 40px) 0 0;
   overflow: hidden;
-  border-bottom: 1px solid var(--line);
   background: radial-gradient(ellipse 40% 75% at 50% 100%, rgba(255, 204, 136, 0.14), transparent 70%);
 }
 .popcorn__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
