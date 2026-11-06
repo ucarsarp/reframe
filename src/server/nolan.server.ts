@@ -10,7 +10,7 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { offlineAnswer, streamText } from './nolan-offline.server'
 
-const MODEL = 'claude-opus-5-5'
+const MODEL = 'claude-sonnet-5-5'
 
 /* ---------- Who Nolan is ----------
    Edit this to change his personality, tone or what he focuses on. */
@@ -119,7 +119,7 @@ function errorResponse(err: unknown) {
    2. On Vercel (or AI_GATEWAY_API_KEY set): Claude through Vercel AI Gateway. Vercel signs
       the site in automatically, so there's no key to copy; the team needs AI Gateway credit.
    3. Neither: Nolan's built-in answers (nolan-offline.server.ts). */
-const GATEWAY_MODEL = 'anthropic/claude-opus-5.5'
+const GATEWAY_MODEL = 'anthropic/claude-sonnet-5.5'
 
 function connect(request: Request) {
   if (process.env.ANTHROPIC_API_KEY) return { client: new Anthropic(), model: MODEL, gateway: false }
