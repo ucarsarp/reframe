@@ -1,3 +1,5 @@
+import { ReFrameTitle } from './Logos'
+
 /* IntroTitleCard: converted from the original index.html. Edit the text and markup here. */
 export function IntroTitleCard() {
   return (
@@ -24,7 +26,7 @@ export function IntroTitleCard() {
             </div>
             <p className="intro__title">
               <span className="sr-only">ReFrame</span>
-              <span className="intro__chars" aria-hidden="true"><span>R</span><span>e</span><em><span>F</span><span>r</span><span>a</span><span>m</span><span>e</span></em></span>
+              <ReFrameTitle className="intro__logo" />
             </p>
             <div className="intro__meta">
               <p className="intro__line intro__line--serif">Every frame has a <em>reason.</em></p>
