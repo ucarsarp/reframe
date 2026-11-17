@@ -9,7 +9,7 @@ import { IntroTitleCard } from '../components/IntroTitleCard'
 import { Hero } from '../components/Hero'
 import { Features } from '../components/Features'
 import { MeetNolan } from '../components/MeetNolan'
-import { HowItWorks } from '../components/HowItWorks'
+import { ScrollBand } from '../components/ScrollBand'
 import { Mission } from '../components/Mission'
 import { Showcase } from '../components/Showcase'
 import { CallToAction } from '../components/CallToAction'
@@ -42,7 +42,7 @@ function HomePage() {
         <Hero />
         <Features />
         <MeetNolan />
-        <HowItWorks />
+        <ScrollBand />
         <Mission />
         <Showcase />
         <CallToAction />

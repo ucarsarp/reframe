@@ -1,15 +1,22 @@
-/* Logos: the final ReFrame title and Nolan marks as inline SVG, so they take the text colour
+/* Logos: the ReFrame main logo and Nolan marks as inline SVG, so they take the text colour
    (currentColor). The shapes come from logo-paths.ts, generated from the "logo finals" designs. */
 import { NOLAN, TITLE } from './logo-paths'
 
-// ReFrame title (Letterbox): the whole word between two widescreen rules, red record dot top right
-export function ReFrameTitle({ className }: { className?: string }) {
-  const { viewBox, rules, word, dot } = TITLE
+// ReFrame main logo (R7): "Re" over "Frame" between widescreen rules, a red timecode bar across the
+// middle and a red record dot. `compact` drops the tiny "2.39 : 1" and "REC" labels for small spots like the header.
+export function ReFrameTitle({ className, compact = false }: { className?: string; compact?: boolean }) {
+  const { rules, word, clipHeight, pill, timecode, dot, ratio, rec } = TITLE
   return (
-    <svg className={className} viewBox={viewBox.join(' ')} fill="none" aria-hidden="true">
-      <path d={rules} stroke="currentColor" strokeOpacity=".4" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-      <path d={word} fill="currentColor" />
-      <circle className="mark__rec" cx={dot.cx} cy={dot.cy} r={dot.r} fill="var(--accent-red)" />
+    <svg className={className} viewBox={compact ? '0 0 300 216' : '0 0 300 250'} fill="none" aria-hidden="true">
+      <defs>
+        <clipPath id="reframe-crop"><rect x="0" y="0" width="300" height={clipHeight} /></clipPath>
+      </defs>
+      <path d={rules} stroke="currentColor" strokeOpacity=".4" strokeWidth="1.6" />
+      <path d={word} fill="currentColor" clipPath="url(#reframe-crop)" />
+      <rect {...pill} fill="var(--accent-red)" stroke="var(--bg)" strokeWidth="5" />
+      <path d={timecode} fill="#f5f5f3" />
+      <circle className="mark__rec" {...dot} fill="var(--accent-red)" />
+      {!compact && <path d={ratio + rec} fill="currentColor" fillOpacity=".55" />}
     </svg>
   )
 }

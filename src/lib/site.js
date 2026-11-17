@@ -156,11 +156,10 @@ export function initSite() {
     ['top', 'Scene 00 / Opening'],
     ['features', 'Scene 01 / Features'],
     ['nolan', 'Scene 02 / Nolan'],
-    ['how', 'Scene 03 / How it works'],
-    ['mission', 'Scene 04 / Mission'],
-    ['showcase', 'Scene 05 / Showcase'],
-    ['download', 'Scene 06 / Finale'],
-    ['credits', 'Scene 07 / The end'],
+    ['mission', 'Scene 03 / Mission'],
+    ['showcase', 'Scene 04 / Showcase'],
+    ['download', 'Scene 05 / Finale'],
+    ['credits', 'Scene 06 / The end'],
   ].map(([id, label]) => [document.getElementById(id), label]).filter(([el]) => el);
 
   function updateHud() {

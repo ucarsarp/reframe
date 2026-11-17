@@ -27,7 +27,6 @@ export function SiteFooter() {
           <ul>
             <li><a className="link" href="#features">Features</a></li>
             <li><a className="link" href="#nolan">Nolan <span className="nav__ai">AI</span></a></li>
-            <li><a className="link" href="#how">How it works</a></li>
             <li><a className="link" href="#mission">Mission</a></li>
             <li><a className="link" href="#showcase">Showcase</a></li>
           </ul>
@@ -110,7 +109,7 @@ export function SiteFooter() {
       {/* Bottom bar */}
       <div className="footer__wide footer__bar">
         <p>&copy; <span id="year">2026</span> ReFrame. All rights reserved.</p>
-        <p className="footer__scene">Scene 07 / The end</p>
+        <p className="footer__scene">Scene 06 / The end</p>
         <a className="link" href="#top">Back to top ↑</a>
       </div>
     </footer>

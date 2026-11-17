@@ -12,7 +12,7 @@ export function MeetNolan() {
           <header className="section__head" data-reveal="">
             <p className="eyebrow">Scene 02 — Meet Nolan</p>
             <h2 className="section__title" id="nolan-title" data-split="">Ask <em>Nolan.</em></h2>
-            <p className="nolan__lede">ReFrame's AI film tutor, named after Christopher Nolan. Point your phone at any screen and Nolan tells you what you're watching, how it was filmed, and why it works.</p>
+            <p className="nolan__lede">ReFrame's AI film tutor. Point your phone at any screen and Nolan tells you what you're watching, how it was filmed, and why it works.</p>
           </header>
 
           <div className="nolan__stage" data-reveal="">
@@ -60,24 +60,6 @@ export function MeetNolan() {
             </div>
           </div>
 
-          {/* What Nolan does */}
-          <div className="nolan__abilities">
-            <article className="ability" data-reveal="">
-              <span className="ability__num">01</span>
-              <h3 className="ability__title">Recognise</h3>
-              <p className="ability__desc">Point your phone at a TV or laptop, or upload a still. Nolan names the film, the director and the scene.</p>
-            </article>
-            <article className="ability" data-reveal="">
-              <span className="ability__num">02</span>
-              <h3 className="ability__title">Explain</h3>
-              <p className="ability__desc">Camera, lens, light and movement: how the shot was likely made, in plain words, not jargon.</p>
-            </article>
-            <article className="ability" data-reveal="">
-              <span className="ability__num">03</span>
-              <h3 className="ability__title">Answer</h3>
-              <p className="ability__desc">Ask anything about the frame. Nolan answers like a tutor, then links the lesson and a way to recreate it.</p>
-            </article>
-          </div>
         </div>
       </section>
 

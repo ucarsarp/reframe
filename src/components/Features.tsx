@@ -21,7 +21,7 @@ export function Features() {
                 <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 10V4h6M22 4h6v6M28 22v6h-6M10 28H4v-6" /><circle cx="16" cy="16" r="4" /></svg>
               </div>
               <h3 className="feature__title">Shot analysis</h3>
-              <p className="feature__desc">Get an instant breakdown of shot type, camera angle and lighting setup for any still you upload or any frame you pick from a film.</p>
+              <p className="feature__desc">Shot type, camera angle and lighting for any still or film frame.</p>
             </div>
             <figure className="feature__media">
               <div className="frame frame--a">
@@ -42,7 +42,7 @@ export function Features() {
                 <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 16s5-9 14-9 14 9 14 9-5 9-14 9S2 16 2 16z" /><circle cx="16" cy="16" r="4" /></svg>
               </div>
               <h3 className="feature__title">Director's intent</h3>
-              <p className="feature__desc">Go past "it looks good." ReFrame explains why a shot was framed the way it was and what the director wanted you to feel.</p>
+              <p className="feature__desc">Why the shot was framed that way, and what it's meant to make you feel.</p>
             </div>
             <figure className="feature__media">
               <div className="frame frame--b">
@@ -63,7 +63,7 @@ export function Features() {
                 <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 6h10a2 2 0 0 1 2 2v18a2 2 0 0 0-2-2H4zM28 6H18a2 2 0 0 0-2 2v18a2 2 0 0 1 2-2h10z" /></svg>
               </div>
               <h3 className="feature__title">Short lessons</h3>
-              <p className="feature__desc">Every result links to a bite-sized lesson on the technique behind it, so each analysis teaches you something you keep.</p>
+              <p className="feature__desc">Each breakdown links to a short lesson on the technique behind it.</p>
             </div>
             <figure className="feature__media">
               <div className="frame frame--c">
@@ -84,7 +84,7 @@ export function Features() {
                 <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="9" width="20" height="16" rx="2" /><path d="M23 14l6-4v14l-6-4" /><circle cx="13" cy="17" r="3.5" /></svg>
               </div>
               <h3 className="feature__title">Recreate the shot</h3>
-              <p className="feature__desc">Step-by-step guides show you how to rebuild the shot with a phone, a desk lamp and whatever you have at home. No pro gear required.</p>
+              <p className="feature__desc">Rebuild the shot with a phone and a desk lamp. No pro gear needed.</p>
             </div>
             <figure className="feature__media">
               <div className="frame frame--d">

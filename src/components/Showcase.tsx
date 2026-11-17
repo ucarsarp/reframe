@@ -9,7 +9,7 @@ export function Showcase() {
       <section className="showcase" id="showcase" aria-labelledby="showcase-title">
         <div className="container">
           <header className="section__head" data-reveal="">
-            <p className="eyebrow">Scene 05 — Showcase</p>
+            <p className="eyebrow">Scene 04 — Showcase</p>
             <h2 className="section__title" id="showcase-title" data-split="">See it <em>in action.</em></h2>
             <p className="showcase__hint">Drag, swipe or use the arrows →</p>
           </header>

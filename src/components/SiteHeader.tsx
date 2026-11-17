@@ -34,12 +34,11 @@ export function SiteHeader() {
         </button>
 
         <div className="nav__center">
-          <a href="#top" className="nav__logo" aria-label="ReFrame, back to top"><ReFrameTitle className="nav__title" /></a>
+          <a href="#top" className="nav__logo" aria-label="ReFrame, back to top"><ReFrameTitle className="nav__title" compact /></a>
           <nav className="nav__menu" id="nav-menu" aria-label="Primary">
             <ul className="nav__links">
               <li><a className="link" href="#features">Features</a></li>
               <li><a className="link" href="#nolan">Nolan <span className="nav__ai">AI</span></a></li>
-              <li><a className="link" href="#how">How it works</a></li>
               <li><a className="link" href="#mission">Mission</a></li>
               <li><a className="link" href="#showcase">Showcase</a></li>
             </ul>
